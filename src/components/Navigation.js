@@ -72,117 +72,132 @@ export default function Navigation() {
   ];
   
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm">
+    <header className="card border-0 rounded-none backdrop-blur-lg bg-black/20 border-b border-cyan-500/30 relative z-50">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo and brand */}
+        <div className="flex justify-between items-center h-20">
+          {/* Futuristic Logo and brand */}
           <div className="flex items-center">
-            <Link href="/dashboard" className="flex items-center">
-              <span className="text-primary font-bold text-xl">NST Dev Club</span>
+            <Link href="/dashboard" className="flex items-center group">
+              <div className="relative">
+                <span className="text-3xl font-black neon-blue tracking-wider">NST</span>
+                <span className="text-xl font-bold text-gray-400 ml-2">DEV CLUB</span>
+                <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform"></div>
+              </div>
             </Link>
           </div>
           
-          {/* Desktop navigation */}
           <nav className="hidden md:flex space-x-4">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                className={`flex items-center px-3 py-2 rounded-md text-sm text-white font-medium ${
                   pathname === item.href || pathname?.startsWith(item.href + "/")
-                    ? "bg-primary text-white"
-                    : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
                 }`}
               >
-                <item.icon className="mr-1.5 h-4 w-4" />
+                <item.icon className="mr-2 h-5 w-5" />
                 {item.name}
               </Link>
             ))}
           </nav>
-          
-          {/* User menu and dark mode toggle */}
+
           <div className="hidden md:flex items-center space-x-4">
-            {/* Dark mode toggle */}
+            {/* Futuristic Dark mode toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="p-3 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-300"
               aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {darkMode ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
             </button>
-            
-            {/* User dropdown - simplified version */}
+
+            {/* Futuristic User dropdown */}
             {user ? (
-              <div className="relative group">
-                <button className="flex items-center space-x-2 focus:outline-none">
-                  <img
-                    src={user.user_metadata?.avatar_url || user.user_metadata?.picture || "https://i.pravatar.cc/150?img=1"}
-                    alt={user.user_metadata?.full_name || user.email}
-                    className="h-8 w-8 rounded-full"
-                  />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                    {user.user_metadata?.full_name || user.email}
-                  </span>
+              <div className="relative group z-50">
+                <button className="flex items-center space-x-3 p-2 rounded-lg border border-purple-500/30 hover:border-purple-400 hover:bg-purple-500/10 transition-all duration-300 focus:outline-none">
+                  <div className="relative">
+                    <img
+                      src={user.user_metadata?.avatar_url || user.user_metadata?.picture || "https://i.pravatar.cc/150?img=1"}
+                      alt={user.user_metadata?.full_name || user.email}
+                      className="h-10 w-10 rounded-full border-2 border-purple-500"
+                    />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-black"></div>
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-bold text-white">
+                      {user.user_metadata?.full_name || user.email}
+                    </div>
+                    <div className="text-xs text-gray-400 font-mono">ONLINE</div>
+                  </div>
                 </button>
 
-                {/* Dropdown menu */}
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+                {/* Futuristic Dropdown menu */}
+                <div className="dropdown-menu absolute right-0 mt-2 w-56 card border border-purple-500/30 backdrop-blur-lg bg-black/80 py-2 hidden group-hover:block" style={{zIndex: 9999}}>
+                  <div className="px-4 py-2 border-b border-purple-500/20">
+                    <div className="text-xs text-gray-400 font-mono uppercase tracking-wider">USER MENU</div>
+                  </div>
+
                   <Link
                     href={`/students/${user.id}`}
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="block px-4 py-3 text-sm text-gray-300 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all duration-300"
                   >
                     <div className="flex items-center">
-                      <FiUser className="mr-2 h-4 w-4" />
-                      My Profile
+                      <FiUser className="mr-3 h-4 w-4" />
+                      <span className="font-medium">MY PROFILE</span>
                     </div>
                   </Link>
 
-                  {/* Admin-only links - for now, we'll show for all authenticated users */}
+                  {/* Admin-only links */}
                   {user.email && (
                     <>
+                      <div className="px-4 py-2 border-t border-purple-500/20">
+                        <div className="text-xs text-gray-400 font-mono uppercase tracking-wider">ADMIN TOOLS</div>
+                      </div>
                       {adminNavItems.map((item) => (
                         <Link
                           key={item.name}
                           href={item.href}
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          className="block px-4 py-3 text-sm text-gray-300 hover:text-purple-400 hover:bg-purple-500/10 transition-all duration-300"
                         >
                           <div className="flex items-center">
-                            <item.icon className="mr-2 h-4 w-4" />
-                            {item.name}
+                            <item.icon className="mr-3 h-4 w-4" />
+                            <span className="font-medium">{item.name.toUpperCase()}</span>
                           </div>
                         </Link>
                       ))}
                     </>
                   )}
 
-                  <hr className="my-1 border-gray-200 dark:border-gray-700" />
-
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => signOut()}
-                  >
-                    <div className="flex items-center">
-                      <FiLogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </div>
-                  </button>
+                  <div className="border-t border-red-500/20 mt-2">
+                    <button
+                      className="block w-full text-left px-4 py-3 text-sm text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300"
+                      onClick={() => signOut()}
+                    >
+                      <div className="flex items-center">
+                        <FiLogOut className="mr-3 h-4 w-4" />
+                        <span className="font-medium">DISCONNECT</span>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
               <Link
                 href="/auth/signin"
-                className="text-sm font-medium text-primary hover:text-primary-dark"
+                className="btn-secondary px-6 py-2 text-sm font-bold"
               >
-                Sign In
+                CONNECT
               </Link>
             )}
           </div>
-          
-          {/* Mobile menu button */}
+
+          {/* Futuristic Mobile menu button */}
           <div className="flex md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+              className="p-3 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-300 focus:outline-none"
               aria-expanded={mobileMenuOpen}
             >
               <span className="sr-only">Open main menu</span>

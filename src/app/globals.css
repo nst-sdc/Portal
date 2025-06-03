@@ -1,13 +1,22 @@
 @import "tailwindcss";
 
+/* Sophisticated Futuristic Variables */
 :root {
-  --primary: #2563eb; /* Blue */
-  --primary-light: #3b82f6;
-  --primary-dark: #1d4ed8;
-  --background: #ffffff; /* White */
-  --foreground: #171717;
-  --card-bg: #f8fafc;
-  --border-color: #e2e8f0;
+  --primary: #6366f1; /* Modern Indigo */
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --accent-orange: #f59e0b;
+  --accent-emerald: #10b981;
+  --accent-rose: #f43f5e;
+  --accent-violet: #8b5cf6;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --background: #0f172a;
+  --surface: #1e293b;
+  --surface-light: #334155;
+  --border: #475569;
+  --border-light: #64748b;
 }
 
 @theme inline {
@@ -17,41 +26,258 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary: #3b82f6; /* Blue */
-    --primary-light: #60a5fa;
-    --primary-dark: #2563eb;
-    --background: #0f172a; /* Dark blue-black */
-    --foreground: #f8fafc;
-    --card-bg: #1e293b;
-    --border-color: #334155;
-  }
+/* Dark theme */
+.dark {
+  --background: #0f172a;
+  --surface: #1e293b;
+  --surface-light: #334155;
+  --border: #475569;
+  --border-light: #64748b;
 }
 
+/* Futuristic Background with Particles */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+  color: var(--text-primary);
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
+/* Animated Background Particles */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(99, 102, 241, 0.6), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(139, 92, 246, 0.4), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(236, 72, 153, 0.3), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(16, 185, 129, 0.3), transparent);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: float 20s ease-in-out infinite;
+  opacity: 0.4;
+  z-index: -1;
+}
+
+/* Floating animation for background */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-20px) rotate(1deg); }
+  66% { transform: translateY(-10px) rotate(-1deg); }
+}
+
+/* Modern Card Component */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: var(--border-light);
+}
+
+/* Modern Professional Buttons */
 .btn-primary {
-  background-color: var(--primary);
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-dark);
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-.card {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+.btn-secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--surface-light);
+  border-color: var(--border-light);
+  transform: translateY(-1px);
+}
+
+/* Accent Colors */
+.accent-primary {
+  color: var(--primary);
+}
+
+.accent-orange {
+  color: var(--accent-orange);
+}
+
+.accent-emerald {
+  color: var(--accent-emerald);
+}
+
+.accent-rose {
+  color: var(--accent-rose);
+}
+
+.accent-violet {
+  color: var(--accent-violet);
+}
+
+/* Gradient Text Effect */
+.gradient-text {
+  background: linear-gradient(45deg, var(--primary), var(--accent-violet));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Subtle Pulse Animation */
+.pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Typing Effect */
+.typing-effect {
+  overflow: hidden;
+  border-right: 2px solid var(--cyber-blue);
+  white-space: nowrap;
+  animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: var(--cyber-blue); }
+}
+
+/* Scan Line Effect */
+.scan-lines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    transparent 50%,
+    rgba(0, 245, 255, 0.03) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+/* Matrix Rain Effect (subtle) */
+.matrix-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-bg::before {
+  content: '01001001 01001110 01001110 01001111 01010110 01000001 01010100 01001001 01001111 01001110';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  color: var(--cyber-green);
+  opacity: 0.1;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 20px;
+  animation: matrix-fall 10s linear infinite;
+  z-index: -1;
+}
+
+@keyframes matrix-fall {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Futuristic Input Fields */
+input, textarea {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 245, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: white !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--cyber-blue) !important;
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.3) !important;
+  outline: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Cyber Grid Pattern */
+.cyber-grid {
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Loading Spinner */
+.cyber-spinner {
+  border: 2px solid rgba(0, 245, 255, 0.3);
+  border-top: 2px solid var(--cyber-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Force dropdown to appear on top */
+.dropdown-menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Ensure navigation header has proper stacking context */
+header {
+  z-index: 1000 !important;
+  position: relative !important;
 }
