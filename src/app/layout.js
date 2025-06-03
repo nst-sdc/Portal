@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,10 +24,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen`}
       >
-        <div className="flex flex-col min-h-screen">
-          {/* Skip Navigation component on the homepage as it has its own layout */}
-          {/* We'll conditionally render it in client components that need it */}
-          <main className="flex-grow">{children}</main>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen">
+            {/* Skip Navigation component on the homepage as it has its own layout */}
+            {/* We'll conditionally render it in client components that need it */}
+            <main className="flex-grow">{children}</main>
           
           <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-6">
             <div className="container mx-auto px-4">
@@ -50,7 +52,8 @@ export default function RootLayout({ children }) {
               </div>
             </div>
           </footer>
-        </div>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

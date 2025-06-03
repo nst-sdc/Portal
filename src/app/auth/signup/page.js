@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { FiGithub, FiMail, FiLinkedin } from "react-icons/fi";
+import { FiGithub, FiMail, FiLinkedin, FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function SignUp() {
+  const router = useRouter();
+  const { signUp, signInWithProvider } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -14,7 +18,10 @@ export default function SignUp() {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,52 +32,90 @@ export default function SignUp() {
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-    
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
+      setError("Email is required");
+      return false;
     }
-    
-    if (!formData.github.trim()) {
-      newErrors.github = "GitHub username is required";
+
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setError("Email is invalid");
+      return false;
     }
-    
+
     if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+      setError("Password is required");
+      return false;
     }
-    
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      setError("Passwords do not match");
+      return false;
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setLoading(true);
+    setError("");
+    setMessage("");
+
     if (!validateForm()) {
+      setLoading(false);
       return;
     }
-    
-    setLoading(true);
-    
-    // In a real app, you would handle the sign-up process here
-    // For now, we'll just simulate a delay
-    setTimeout(() => {
+
+    try {
+      console.log('Attempting sign up with:', formData.email);
+      const { data, error } = await signUp(formData.email, formData.password, {
+        data: {
+          full_name: formData.name,
+          github_username: formData.github,
+          discord_username: formData.discord,
+        }
+      });
+
+      console.log('Sign up response:', { data, error });
+
+      if (error) {
+        setError(error.message);
+      } else if (data.user) {
+        setMessage("Account created successfully! You can now sign in.");
+        // Redirect to sign-in page after a short delay
+        setTimeout(() => {
+          router.push('/auth/signin');
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Sign up error:', err);
+      setError("An unexpected error occurred");
+    } finally {
       setLoading(false);
-      // Redirect to sign-in page after successful sign-up
-      window.location.href = "/auth/signin";
-    }, 1500);
+    }
+  };
+
+  const handleOAuthSignUp = async (provider) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const { error } = await signInWithProvider(provider);
+
+      if (error) {
+        setError(error.message);
+      }
+      // OAuth redirect will handle the rest
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,30 +137,45 @@ export default function SignUp() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="card py-8 px-4 sm:px-10">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+
+          {message && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+              {message}
+            </div>
+          )}
+
           <div className="space-y-6">
             <div className="flex space-x-4">
               <button
                 type="button"
-                onClick={() => window.location.href = "/api/auth/signin/github"}
-                className="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 focus:outline-none"
+                onClick={() => handleOAuthSignUp("github")}
+                disabled={loading}
+                className="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 focus:outline-none disabled:opacity-50"
               >
                 <FiGithub className="mr-2 h-5 w-5" />
                 GitHub
               </button>
-              
+
               <button
                 type="button"
-                onClick={() => window.location.href = "/api/auth/signin/google"}
-                className="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+                onClick={() => handleOAuthSignUp("google")}
+                disabled={loading}
+                className="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none disabled:opacity-50"
               >
                 <FiMail className="mr-2 h-5 w-5" />
                 Google
               </button>
-              
+
               <button
                 type="button"
-                onClick={() => window.location.href = "/api/auth/signin/linkedin"}
-                className="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                onClick={() => handleOAuthSignUp("linkedin")}
+                disabled={loading}
+                className="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50"
               >
                 <FiLinkedin className="mr-2 h-5 w-5" />
                 LinkedIn
@@ -139,7 +199,7 @@ export default function SignUp() {
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  Full Name
+                  Full Name (Optional)
                 </label>
                 <div className="mt-1">
                   <input
@@ -147,14 +207,10 @@ export default function SignUp() {
                     name="name"
                     type="text"
                     autoComplete="name"
-                    required
                     value={formData.name}
                     onChange={handleChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm bg-white dark:bg-gray-800"
                   />
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                  )}
                 </div>
               </div>
 
@@ -176,9 +232,7 @@ export default function SignUp() {
                     onChange={handleChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm bg-white dark:bg-gray-800"
                   />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
+
                 </div>
               </div>
 
@@ -187,21 +241,17 @@ export default function SignUp() {
                   htmlFor="github"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  GitHub Username
+                  GitHub Username (Optional)
                 </label>
                 <div className="mt-1">
                   <input
                     id="github"
                     name="github"
                     type="text"
-                    required
                     value={formData.github}
                     onChange={handleChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm bg-white dark:bg-gray-800"
                   />
-                  {errors.github && (
-                    <p className="mt-1 text-sm text-red-600">{errors.github}</p>
-                  )}
                 </div>
               </div>
 
@@ -210,7 +260,7 @@ export default function SignUp() {
                   htmlFor="discord"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  Discord Username
+                  Discord Username (Optional)
                 </label>
                 <div className="mt-1">
                   <input
@@ -231,20 +281,28 @@ export default function SignUp() {
                 >
                   Password
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm bg-white dark:bg-gray-800"
+                    className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm bg-white dark:bg-gray-800"
                   />
-                  {errors.password && (
-                    <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPassword ? (
+                      <FiEyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <FiEye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -255,20 +313,28 @@ export default function SignUp() {
                 >
                   Confirm Password
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm bg-white dark:bg-gray-800"
+                    className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm bg-white dark:bg-gray-800"
                   />
-                  {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showConfirmPassword ? (
+                      <FiEyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <FiEye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </button>
                 </div>
               </div>
 

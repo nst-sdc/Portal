@@ -1,43 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
 import { FiCode, FiUsers, FiAward, FiCalendar, FiArrowRight } from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    // In a real app, this would check the authentication state from a context or API
-    // For now, we'll simulate an authenticated user for demo purposes
-    const checkAuth = async () => {
-      try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // For demo purposes, we'll assume the user is authenticated
-        // In a real app, this would check cookies, tokens, or an auth context
-        const authenticated = true; // Change to false to see the landing page
-        setIsAuthenticated(authenticated);
-        
-        if (authenticated) {
-          // Redirect to dashboard if authenticated
-          router.push('/dashboard');
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        setIsAuthenticated(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    // Redirect to dashboard if authenticated
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   // Show loading state while checking authentication
   if (loading) {
@@ -49,7 +28,7 @@ export default function Home() {
   }
 
   // If not authenticated or while waiting for redirect, show landing page
-  if (!isAuthenticated) {
+  if (!user) {
   return (
     <div className="flex flex-col gap-16">
       {/* Hero Section */}

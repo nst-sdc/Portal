@@ -3,52 +3,39 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  FiHome, 
-  FiUsers, 
-  FiCode, 
-  FiCalendar, 
-  FiAward, 
-  FiUser, 
-  FiLogOut, 
-  FiMenu, 
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  FiHome,
+  FiUsers,
+  FiCode,
+  FiCalendar,
+  FiAward,
+  FiUser,
+  FiLogOut,
+  FiMenu,
   FiX,
   FiMoon,
   FiSun
 } from "react-icons/fi";
 
-// Mock user data - in a real app this would come from an auth context
-const mockUser = {
-  id: 1,
-  name: "John Doe",
-  avatar: "https://i.pravatar.cc/150?img=1",
-  role: "Student",
-  isAdmin: true
-};
-
 export default function Navigation() {
   const pathname = usePathname();
-  const [user, setUser] = useState(null);
+  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  
+
   useEffect(() => {
     // Check if dark mode is enabled in local storage or system preference
-    const isDarkMode = localStorage.getItem("darkMode") === "true" || 
+    const isDarkMode = localStorage.getItem("darkMode") === "true" ||
       (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    
+
     setDarkMode(isDarkMode);
-    
+
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-    
-    // In a real app, fetch user data from an API or auth context
-    setTimeout(() => {
-      setUser(mockUser);
-    }, 300);
   }, []);
   
   // Toggle dark mode
@@ -129,13 +116,15 @@ export default function Navigation() {
               <div className="relative group">
                 <button className="flex items-center space-x-2 focus:outline-none">
                   <img
-                    src={user.avatar}
-                    alt={user.name}
+                    src={user.user_metadata?.avatar_url || user.user_metadata?.picture || "https://i.pravatar.cc/150?img=1"}
+                    alt={user.user_metadata?.full_name || user.email}
                     className="h-8 w-8 rounded-full"
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    {user.user_metadata?.full_name || user.email}
+                  </span>
                 </button>
-                
+
                 {/* Dropdown menu */}
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                   <Link
@@ -147,9 +136,9 @@ export default function Navigation() {
                       My Profile
                     </div>
                   </Link>
-                  
-                  {/* Admin-only links */}
-                  {user.isAdmin && (
+
+                  {/* Admin-only links - for now, we'll show for all authenticated users */}
+                  {user.email && (
                     <>
                       {adminNavItems.map((item) => (
                         <Link
@@ -165,15 +154,12 @@ export default function Navigation() {
                       ))}
                     </>
                   )}
-                  
+
                   <hr className="my-1 border-gray-200 dark:border-gray-700" />
-                  
+
                   <button
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => {
-                      // In a real app, this would call a logout function
-                      console.log("Logout clicked");
-                    }}
+                    onClick={() => signOut()}
                   >
                     <div className="flex items-center">
                       <FiLogOut className="mr-2 h-4 w-4" />
@@ -230,7 +216,7 @@ export default function Navigation() {
             ))}
             
             {/* Admin-only links */}
-            {user?.isAdmin && (
+            {user?.email && (
               <>
                 <div className="border-t border-gray-200 dark:border-gray-700 my-2 pt-2">
                   <p className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -258,14 +244,16 @@ export default function Navigation() {
                 <div className="flex items-center px-4">
                   <div className="flex-shrink-0">
                     <img
-                      src={user.avatar}
-                      alt={user.name}
+                      src={user.user_metadata?.avatar_url || user.user_metadata?.picture || "https://i.pravatar.cc/150?img=1"}
+                      alt={user.user_metadata?.full_name || user.email}
                       className="h-10 w-10 rounded-full"
                     />
                   </div>
                   <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800 dark:text-gray-200">{user.name}</div>
-                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{user.role}</div>
+                    <div className="text-base font-medium text-gray-800 dark:text-gray-200">
+                      {user.user_metadata?.full_name || user.email}
+                    </div>
+                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{user.email}</div>
                   </div>
                   <button
                     onClick={toggleDarkMode}
@@ -285,10 +273,7 @@ export default function Navigation() {
                   </Link>
                   <button
                     className="flex w-full items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => {
-                      // In a real app, this would call a logout function
-                      console.log("Logout clicked");
-                    }}
+                    onClick={() => signOut()}
                   >
                     <FiLogOut className="mr-2 h-5 w-5" />
                     Sign Out

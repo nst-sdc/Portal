@@ -1,32 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
-import { 
-  FiUsers, 
-  FiCode, 
-  FiAward, 
-  FiCalendar, 
-  FiGithub, 
+import {
+  FiUsers,
+  FiCode,
+  FiAward,
+  FiCalendar,
+  FiGithub,
   FiArrowRight,
   FiCheckCircle,
   FiAlertCircle,
   FiClock,
   FiMapPin
 } from "react-icons/fi";
-
-// Mock data for dashboard
-const mockUserData = {
-  id: 1,
-  name: "John Doe",
-  avatar: "https://i.pravatar.cc/150?img=1",
-  batch: "2023",
-  rewardPoints: 850,
-  githubUsername: "johndoe",
-  role: "Student",
-  isAdmin: true
-};
 
 const mockStats = {
   totalStudents: 42,
@@ -91,34 +81,44 @@ const mockRecentActivity = [
 ];
 
 export default function Dashboard() {
-  const [userData, setUserData] = useState(null);
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState(null);
   const [projects, setProjects] = useState([]);
   const [meetings, setMeetings] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Redirect to sign-in if not authenticated
   useEffect(() => {
-    // Simulate API calls to fetch dashboard data
-    const fetchDashboardData = async () => {
-      try {
-        // In a real app, these would be actual API calls
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        setUserData(mockUserData);
-        setStats(mockStats);
-        setProjects(mockProjects);
-        setMeetings(mockMeetings);
-        setRecentActivity(mockRecentActivity);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!authLoading && !user) {
+      router.push("/auth/signin");
+    }
+  }, [authLoading, user, router]);
 
-    fetchDashboardData();
-  }, []);
+  useEffect(() => {
+    // Only fetch data if user is authenticated
+    if (user) {
+      // Simulate API calls to fetch dashboard data
+      const fetchDashboardData = async () => {
+        try {
+          // In a real app, these would be actual API calls
+          await new Promise(resolve => setTimeout(resolve, 800));
+
+          setStats(mockStats);
+          setProjects(mockProjects);
+          setMeetings(mockMeetings);
+          setRecentActivity(mockRecentActivity);
+        } catch (error) {
+          console.error("Error fetching dashboard data:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchDashboardData();
+    }
+  }, [user]);
 
   // Helper function to format date
   const formatDate = (dateString) => {
@@ -127,7 +127,7 @@ export default function Dashboard() {
   };
 
   // Loading state
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="animate-pulse">
@@ -174,7 +174,9 @@ export default function Dashboard() {
       <div className="container mx-auto py-8 px-4">
         {/* Welcome section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back, {userData?.name}</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            Welcome back, {user?.user_metadata?.full_name || user?.email}
+          </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Here's what's happening in the NST Dev Club
           </p>
@@ -192,7 +194,7 @@ export default function Dashboard() {
           <div className="flex items-end justify-between">
             <div>
               <p className="text-3xl font-bold">{stats?.myRewardPoints}</p>
-              <Link href={`/students/${userData?.id}`} className="text-sm text-primary hover:underline flex items-center mt-2">
+              <Link href={`/students/${user?.id}`} className="text-sm text-primary hover:underline flex items-center mt-2">
                 View breakdown <FiArrowRight size={14} className="ml-1" />
               </Link>
             </div>
@@ -379,7 +381,7 @@ export default function Dashboard() {
           ) : (
             <div className="col-span-full card p-6 text-center">
               <p className="text-gray-500 dark:text-gray-400 mb-4">No upcoming meetings scheduled</p>
-              {userData?.isAdmin && (
+              {user?.email && (
                 <Link href="/meetings/new" className="btn-primary inline-flex items-center">
                   Schedule a meeting <FiArrowRight className="ml-2" />
                 </Link>
@@ -445,10 +447,10 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* Admin Quick Actions - Only shown to admins */}
-      {userData?.isAdmin && (
+      {/* Quick Actions - Only shown to authenticated users */}
+      {user?.email && (
         <div className="mt-8 card p-6">
-          <h2 className="text-xl font-bold mb-4">Admin Quick Actions</h2>
+          <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link href="/projects/new" className="btn-secondary flex items-center justify-center">
               <FiCode className="mr-2" /> New Project
@@ -457,7 +459,7 @@ export default function Dashboard() {
               <FiCalendar className="mr-2" /> Schedule Meeting
             </Link>
             <Link href="/students" className="btn-secondary flex items-center justify-center">
-              <FiUsers className="mr-2" /> Manage Students
+              <FiUsers className="mr-2" /> View Members
             </Link>
             <Link href="/projects" className="btn-secondary flex items-center justify-center">
               <FiGithub className="mr-2" /> All Projects
