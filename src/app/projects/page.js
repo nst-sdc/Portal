@@ -4,93 +4,22 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
-import { FiFilter, FiSearch, FiGithub, FiStar, FiCode, FiUsers } from "react-icons/fi";
-
-// Mock data for projects (in a real app, this would come from an API)
-const mockProjects = [
-  {
-    id: 1,
-    name: "Student Management System",
-    description: "A comprehensive system to manage student records, attendance, and performance.",
-    tags: ["React", "Node.js", "MongoDB"],
-    stars: 24,
-    forks: 8,
-    contributors: 5,
-    owner: "john_doe",
-    repoUrl: "https://github.com/nst-dev-club/student-management",
-    isUserProject: true,
-  },
-  {
-    id: 2,
-    name: "College Event Portal",
-    description: "Platform for managing and promoting college events and activities.",
-    tags: ["Next.js", "Firebase", "Tailwind CSS"],
-    stars: 18,
-    forks: 4,
-    contributors: 3,
-    owner: "jane_smith",
-    repoUrl: "https://github.com/nst-dev-club/event-portal",
-    isUserProject: false,
-  },
-  {
-    id: 3,
-    name: "Campus Navigation App",
-    description: "Mobile application to help students navigate around campus facilities.",
-    tags: ["React Native", "Google Maps API", "Express"],
-    stars: 32,
-    forks: 12,
-    contributors: 7,
-    owner: "alex_wong",
-    repoUrl: "https://github.com/nst-dev-club/campus-nav",
-    isUserProject: false,
-  },
-  {
-    id: 4,
-    name: "Study Group Finder",
-    description: "Application to help students find and create study groups for different courses.",
-    tags: ["Vue.js", "Django", "PostgreSQL"],
-    stars: 15,
-    forks: 3,
-    contributors: 4,
-    owner: "john_doe",
-    repoUrl: "https://github.com/nst-dev-club/study-group-finder",
-    isUserProject: true,
-  },
-  {
-    id: 5,
-    name: "Course Review System",
-    description: "Platform for students to review and rate courses and professors.",
-    tags: ["Angular", "Spring Boot", "MySQL"],
-    stars: 27,
-    forks: 9,
-    contributors: 6,
-    owner: "sarah_johnson",
-    repoUrl: "https://github.com/nst-dev-club/course-reviews",
-    isUserProject: false,
-  },
-  {
-    id: 6,
-    name: "Campus Marketplace",
-    description: "Online marketplace for students to buy and sell textbooks and other items.",
-    tags: ["React", "Node.js", "MongoDB"],
-    stars: 21,
-    forks: 7,
-    contributors: 5,
-    owner: "john_doe",
-    repoUrl: "https://github.com/nst-dev-club/campus-marketplace",
-    isUserProject: true,
-  },
-];
+import { FiFilter, FiSearch, FiGithub, FiStar, FiCode, FiUsers, FiRefreshCw } from "react-icons/fi";
+import { projectsService } from '@/lib/services/projects';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Projects() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showOnlyUserProjects, setShowOnlyUserProjects] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Check URL parameters for initial filters
   useEffect(() => {
@@ -110,19 +39,55 @@ export default function Projects() {
     }
   }, [searchParams]);
 
-  // Simulate fetching projects from an API
+  // Fetch projects from Supabase
   useEffect(() => {
     const fetchProjects = async () => {
-      // In a real app, you would fetch data from an API
-      setTimeout(() => {
-        setProjects(mockProjects);
-        setFilteredProjects(mockProjects);
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const filters = {
+          search: searchTerm,
+          userId: showOnlyUserProjects ? user?.id : null,
+          techStack: selectedTags
+        };
+
+        const projectsData = await projectsService.getAllProjects(filters);
+        setProjects(projectsData);
+        setFilteredProjects(projectsData);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError('Failed to load projects. Please try again.');
+        setProjects([]);
+        setFilteredProjects([]);
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
     };
 
     fetchProjects();
   }, []);
+
+  // Refresh projects data
+  const refreshProjects = async () => {
+    try {
+      setIsRefreshing(true);
+      const filters = {
+        search: searchTerm,
+        userId: showOnlyUserProjects ? user?.id : null,
+        techStack: selectedTags
+      };
+
+      const projectsData = await projectsService.getAllProjects(filters);
+      setProjects(projectsData);
+      setFilteredProjects(projectsData);
+    } catch (err) {
+      console.error('Error refreshing projects:', err);
+      setError('Failed to refresh projects. Please try again.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Filter projects based on search term, selected tags, and user projects filter
   useEffect(() => {
@@ -196,13 +161,28 @@ export default function Projects() {
           <p className="text-gray-600 dark:text-gray-400">
             Discover and collaborate on projects within the NST Dev Club
           </p>
+          {error && (
+            <div className="mt-2 text-red-600 dark:text-red-400 text-sm">
+              {error}
+            </div>
+          )}
         </div>
-        <Link
-          href="/projects/new"
-          className="mt-4 md:mt-0 btn-primary"
-        >
-          Create New Project
-        </Link>
+        <div className="flex gap-2 mt-4 md:mt-0">
+          <button
+            onClick={refreshProjects}
+            disabled={isRefreshing}
+            className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+          <Link
+            href="/projects/new"
+            className="btn-primary"
+          >
+            Create New Project
+          </Link>
+        </div>
       </div>
 
       {/* Filters and Search */}

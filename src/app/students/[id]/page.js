@@ -3,19 +3,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { 
-  FiArrowLeft, 
-  FiGithub, 
-  FiMail, 
-  FiMessageSquare, 
-  FiAward, 
-  FiStar, 
-  FiCode, 
+import {
+  FiArrowLeft,
+  FiGithub,
+  FiMail,
+  FiMessageSquare,
+  FiAward,
+  FiStar,
+  FiCode,
   FiFileText,
   FiCheckCircle,
   FiAlertCircle,
   FiGitPullRequest,
-  FiLightbulb
+  FiBulb
 } from "react-icons/fi";
 
 // Mock data for students (in a real app, this would come from an API)
@@ -488,7 +488,7 @@ export default function StudentDetail() {
                           {item.category === "Issues Raised" && <FiAlertCircle className="text-yellow-500 mr-2" />}
                           {item.category === "Issues Solved" && <FiCheckCircle className="text-green-500 mr-2" />}
                           {item.category === "PRs Merged" && <FiGitPullRequest className="text-purple-500 mr-2" />}
-                          {item.category === "Project Ideas" && <FiLightbulb className="text-blue-500 mr-2" />}
+                          {item.category === "Project Ideas" && <FiBulb className="text-blue-500 mr-2" />}
                           <span className="font-medium text-gray-900 dark:text-gray-100">{item.category}</span>
                         </div>
                       </td>

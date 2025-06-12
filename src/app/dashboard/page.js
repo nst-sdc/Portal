@@ -15,70 +15,10 @@ import {
   FiCheckCircle,
   FiAlertCircle,
   FiClock,
-  FiMapPin
+  FiMapPin,
+  FiRefreshCw
 } from "react-icons/fi";
-
-const mockStats = {
-  totalStudents: 42,
-  totalProjects: 15,
-  activeProjects: 8,
-  upcomingMeetings: 3,
-  myProjects: 4,
-  myRewardPoints: 850,
-  recentAttendance: "90%"
-};
-
-const mockProjects = [
-  { id: 1, name: "AI Chat Assistant", role: "Developer", status: "Active", progress: 75 },
-  { id: 2, name: "Student Portal", role: "Lead Developer", status: "Active", progress: 60 },
-  { id: 3, name: "Mobile App", role: "Contributor", status: "Planning", progress: 20 }
-];
-
-const mockMeetings = [
-  { 
-    id: 1, 
-    title: "Weekly Standup", 
-    date: "2025-06-04", 
-    time: "15:00", 
-    location: "Room 302",
-    attendanceOpen: true
-  },
-  { 
-    id: 2, 
-    title: "Project Planning", 
-    date: "2025-06-07", 
-    time: "10:00", 
-    location: "Zoom",
-    attendanceOpen: false
-  }
-];
-
-const mockRecentActivity = [
-  { 
-    id: 1, 
-    type: "project_contribution", 
-    project: "AI Chat Assistant", 
-    action: "Merged PR: Fix authentication bug", 
-    points: 50, 
-    date: "2025-06-02" 
-  },
-  { 
-    id: 2, 
-    type: "meeting_attendance", 
-    meeting: "Weekly Standup", 
-    action: "Attended meeting", 
-    points: 10, 
-    date: "2025-05-28" 
-  },
-  { 
-    id: 3, 
-    type: "issue_solved", 
-    project: "Student Portal", 
-    action: "Solved issue: UI responsiveness", 
-    points: 30, 
-    date: "2025-05-25" 
-  }
-];
+import { dashboardService } from '@/lib/services/dashboard';
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -88,6 +28,8 @@ export default function Dashboard() {
   const [meetings, setMeetings] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -99,26 +41,50 @@ export default function Dashboard() {
   useEffect(() => {
     // Only fetch data if user is authenticated
     if (user) {
-      // Simulate API calls to fetch dashboard data
-      const fetchDashboardData = async () => {
-        try {
-          // In a real app, these would be actual API calls
-          await new Promise(resolve => setTimeout(resolve, 800));
-
-          setStats(mockStats);
-          setProjects(mockProjects);
-          setMeetings(mockMeetings);
-          setRecentActivity(mockRecentActivity);
-        } catch (error) {
-          console.error("Error fetching dashboard data:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
       fetchDashboardData();
     }
   }, [user]);
+
+  // Fetch dashboard data from Supabase
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const dashboardData = await dashboardService.getDashboardStats(user.id);
+
+      setStats({
+        totalStudents: dashboardData.totalStudents,
+        totalProjects: dashboardData.totalProjects,
+        activeProjects: dashboardData.activeProjects,
+        upcomingMeetings: dashboardData.upcomingMeetings,
+        myProjects: dashboardData.myProjects,
+        myRewardPoints: dashboardData.myRewardPoints,
+        recentAttendance: dashboardData.recentAttendance
+      });
+
+      setProjects(dashboardData.projects);
+      setMeetings(dashboardData.meetings);
+      setRecentActivity(dashboardData.activity);
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Refresh dashboard data
+  const refreshDashboard = async () => {
+    try {
+      setIsRefreshing(true);
+      await fetchDashboardData();
+    } catch (err) {
+      console.error("Error refreshing dashboard:", err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Helper function to format date
   const formatDate = (dateString) => {
@@ -173,13 +139,30 @@ export default function Dashboard() {
       <Navigation />
       <div className="container mx-auto py-8 px-4">
         {/* Welcome section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            Welcome back, {user?.user_metadata?.full_name || user?.email}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Here's what's happening in the NST Dev Club
-          </p>
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
+              Welcome back, {user?.user_metadata?.full_name || user?.email}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Here's what's happening in the NST Dev Club
+            </p>
+            {error && (
+              <div className="mt-2 text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+          </div>
+          <div className="mt-4 md:mt-0">
+            <button
+              onClick={refreshDashboard}
+              disabled={isRefreshing}
+              className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            </button>
+          </div>
         </div>
         
         {/* Stats overview */}

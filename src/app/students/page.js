@@ -4,142 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
-import { FiSearch, FiFilter, FiGithub, FiAward, FiUser, FiMail } from "react-icons/fi";
-
-// Mock data for students (in a real app, this would come from an API)
-const mockStudents = [
-  {
-    id: 1,
-    name: "John Doe",
-    batch: "2023",
-    email: "john.doe@example.com",
-    githubUsername: "johndoe",
-    discordUsername: "johndoe#1234",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    topLanguages: ["JavaScript", "Python", "React"],
-    rewardPoints: 320,
-    projectCount: 5,
-    issuesRaised: 12,
-    issuesSolved: 8,
-    prsMerged: 15,
-    projectIdeas: 3,
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    batch: "2023",
-    email: "jane.smith@example.com",
-    githubUsername: "janesmith",
-    discordUsername: "janesmith#5678",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    topLanguages: ["TypeScript", "Node.js", "Express"],
-    rewardPoints: 280,
-    projectCount: 3,
-    issuesRaised: 8,
-    issuesSolved: 10,
-    prsMerged: 12,
-    projectIdeas: 2,
-  },
-  {
-    id: 3,
-    name: "Alex Wong",
-    batch: "2022",
-    email: "alex.wong@example.com",
-    githubUsername: "alexwong",
-    discordUsername: "alexwong#9012",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    topLanguages: ["Java", "Spring Boot", "React"],
-    rewardPoints: 420,
-    projectCount: 7,
-    issuesRaised: 18,
-    issuesSolved: 15,
-    prsMerged: 22,
-    projectIdeas: 5,
-  },
-  {
-    id: 4,
-    name: "Sarah Johnson",
-    batch: "2022",
-    email: "sarah.johnson@example.com",
-    githubUsername: "sarahjohnson",
-    discordUsername: "sarahjohnson#3456",
-    avatar: "https://i.pravatar.cc/150?img=4",
-    topLanguages: ["Python", "Django", "PostgreSQL"],
-    rewardPoints: 350,
-    projectCount: 4,
-    issuesRaised: 14,
-    issuesSolved: 12,
-    prsMerged: 16,
-    projectIdeas: 4,
-  },
-  {
-    id: 5,
-    name: "Mike Brown",
-    batch: "2024",
-    email: "mike.brown@example.com",
-    githubUsername: "mikebrown",
-    discordUsername: "mikebrown#7890",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    topLanguages: ["C++", "Python", "TensorFlow"],
-    rewardPoints: 180,
-    projectCount: 2,
-    issuesRaised: 6,
-    issuesSolved: 4,
-    prsMerged: 8,
-    projectIdeas: 1,
-  },
-  {
-    id: 6,
-    name: "Emily Davis",
-    batch: "2024",
-    email: "emily.davis@example.com",
-    githubUsername: "emilydavis",
-    discordUsername: "emilydavis#2345",
-    avatar: "https://i.pravatar.cc/150?img=6",
-    topLanguages: ["JavaScript", "React", "Node.js"],
-    rewardPoints: 210,
-    projectCount: 3,
-    issuesRaised: 8,
-    issuesSolved: 6,
-    prsMerged: 10,
-    projectIdeas: 2,
-  },
-  {
-    id: 7,
-    name: "David Wilson",
-    batch: "2023",
-    email: "david.wilson@example.com",
-    githubUsername: "davidwilson",
-    discordUsername: "davidwilson#6789",
-    avatar: "https://i.pravatar.cc/150?img=7",
-    topLanguages: ["TypeScript", "Angular", "MongoDB"],
-    rewardPoints: 290,
-    projectCount: 4,
-    issuesRaised: 10,
-    issuesSolved: 9,
-    prsMerged: 14,
-    projectIdeas: 3,
-  },
-  {
-    id: 8,
-    name: "Lisa Chen",
-    batch: "2022",
-    email: "lisa.chen@example.com",
-    githubUsername: "lisachen",
-    discordUsername: "lisachen#0123",
-    avatar: "https://i.pravatar.cc/150?img=8",
-    topLanguages: ["Java", "Kotlin", "Android"],
-    rewardPoints: 380,
-    projectCount: 6,
-    issuesRaised: 16,
-    issuesSolved: 14,
-    prsMerged: 20,
-    projectIdeas: 4,
-  },
-];
+import { FiSearch, FiFilter, FiGithub, FiAward, FiUser, FiMail, FiRefreshCw } from "react-icons/fi";
+import { studentsService } from '@/lib/services/students';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Students() {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -147,6 +18,8 @@ export default function Students() {
   const [sortBy, setSortBy] = useState("rewardPoints");
   const [sortOrder, setSortOrder] = useState("desc");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Check URL parameters for initial filters
   useEffect(() => {
@@ -171,19 +44,53 @@ export default function Students() {
     }
   }, [searchParams]);
 
-  // Simulate fetching students from an API
+  // Fetch students from Supabase
   useEffect(() => {
     const fetchStudents = async () => {
-      // In a real app, you would fetch data from an API
-      setTimeout(() => {
-        setStudents(mockStudents);
-        setFilteredStudents(mockStudents);
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const filters = {
+          search: searchTerm,
+          batch: selectedBatch
+        };
+
+        const studentsData = await studentsService.getAllStudents(filters);
+        setStudents(studentsData);
+        setFilteredStudents(studentsData);
+      } catch (err) {
+        console.error('Error fetching students:', err);
+        setError('Failed to load students. Please try again.');
+        setStudents([]);
+        setFilteredStudents([]);
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
     };
 
     fetchStudents();
   }, []);
+
+  // Refresh students data
+  const refreshStudents = async () => {
+    try {
+      setIsRefreshing(true);
+      const filters = {
+        search: searchTerm,
+        batch: selectedBatch
+      };
+
+      const studentsData = await studentsService.getAllStudents(filters);
+      setStudents(studentsData);
+      setFilteredStudents(studentsData);
+    } catch (err) {
+      console.error('Error refreshing students:', err);
+      setError('Failed to refresh students. Please try again.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Get all unique batches from students
   const batches = [...new Set(students.map((student) => student.batch))];
@@ -273,6 +180,21 @@ export default function Students() {
           <p className="text-gray-600 dark:text-gray-400">
             Browse and discover talented students in the NST Dev Club
           </p>
+          {error && (
+            <div className="mt-2 text-red-600 dark:text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+        </div>
+        <div className="mt-4 md:mt-0">
+          <button
+            onClick={refreshStudents}
+            disabled={isRefreshing}
+            className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </button>
         </div>
       </div>
 
