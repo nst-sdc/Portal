@@ -14,9 +14,9 @@ import {
   FiFileText,
   FiCheckCircle,
   FiAlertCircle,
-  FiGitPullRequest,
-  FiLightbulb
+  FiGitPullRequest
 } from "react-icons/fi";
+import { BsLightbulb } from "react-icons/bs";
 
 // Mock data for students (in a real app, this would come from an API)
 const mockStudents = [
@@ -488,7 +488,7 @@ export default function StudentDetail() {
                           {item.category === "Issues Raised" && <FiAlertCircle className="text-yellow-500 mr-2" />}
                           {item.category === "Issues Solved" && <FiCheckCircle className="text-green-500 mr-2" />}
                           {item.category === "PRs Merged" && <FiGitPullRequest className="text-purple-500 mr-2" />}
-                          {item.category === "Project Ideas" && <FiLightbulb className="text-blue-500 mr-2" />}
+                          {item.category === "Project Ideas" && <BsLightbulb className="text-blue-500 mr-2" />}
                           <span className="font-medium text-gray-900 dark:text-gray-100">{item.category}</span>
                         </div>
                       </td>
@@ -530,7 +530,7 @@ export default function StudentDetail() {
                     <span><strong>PRs Merged:</strong> 10 points per PR</span>
                   </li>
                   <li className="flex items-start">
-                    <FiLightbulb className="text-blue-500 mt-1 mr-2 flex-shrink-0" />
+                    <BsLightbulb className="text-blue-500 mt-1 mr-2 flex-shrink-0" />
                     <span><strong>Project Ideas:</strong> 10 points per idea</span>
                   </li>
                 </ul>

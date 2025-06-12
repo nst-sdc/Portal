@@ -1,7 +1,7 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import { FiSearch, FiFilter, FiGithub, FiAward, FiUser, FiMail } from "react-icons/fi";
@@ -139,7 +139,6 @@ const mockStudents = [
 ];
 
 export default function Students() {
-  const searchParams = useSearchParams();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -148,41 +147,19 @@ export default function Students() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check URL parameters for initial filters
   useEffect(() => {
-    const batchParam = searchParams.get('batch');
-    if (batchParam) {
-      setSelectedBatch(batchParam);
-    }
-    
-    const searchParam = searchParams.get('search');
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-    
-    const sortByParam = searchParams.get('sortBy');
-    if (sortByParam) {
-      setSortBy(sortByParam);
-    }
-    
-    const sortOrderParam = searchParams.get('sortOrder');
-    if (sortOrderParam === 'asc' || sortOrderParam === 'desc') {
-      setSortOrder(sortOrderParam);
-    }
-  }, [searchParams]);
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get('search');
+    const batch = params.get('batch');
+    if (search) setSearchTerm(search);
+    if (batch) setSelectedBatch(batch);
 
-  // Simulate fetching students from an API
-  useEffect(() => {
-    const fetchStudents = async () => {
-      // In a real app, you would fetch data from an API
-      setTimeout(() => {
-        setStudents(mockStudents);
-        setFilteredStudents(mockStudents);
-        setIsLoading(false);
-      }, 1000);
-    };
-
-    fetchStudents();
+    // simulate fetch
+    setTimeout(() => {
+      setStudents(mockStudents);
+      setFilteredStudents(mockStudents);
+      setIsLoading(false);
+    }, 1000);
   }, []);
 
   // Get all unique batches from students
