@@ -15,7 +15,6 @@ export async function POST(request) {
       );
     }
 
-    console.log(`Syncing GitHub data for: ${githubUsername}`);
 
     // Fetch GitHub data directly
     const githubData = await githubService.fetchCompleteUserData(githubUsername);

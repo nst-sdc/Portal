@@ -69,23 +69,6 @@ export async function POST() {
     // Create sample GitHub stats for each profile
     const githubStatsData = [
       {
-        user_id: profiles[0].id,
-        github_username: 'Oashe02',
-        public_repos: 25,
-        followers: 20,
-        following: 30,
-        total_stars: 100,
-        total_forks: 45,
-        total_commits_last_year: 400,
-        top_languages: [
-          { name: 'JavaScript', percentage: 45 },
-          { name: 'Python', percentage: 30 },
-          { name: 'TypeScript', percentage: 25 }
-        ],
-        contribution_streak: 25,
-        last_contribution_date: new Date().toISOString()
-      },
-      {
         user_id: profiles[1].id,
         github_username: 'johndoe',
         public_repos: 15,

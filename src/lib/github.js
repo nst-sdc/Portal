@@ -161,7 +161,7 @@ export class GitHubService {
   // Fetch and process complete GitHub data for a user
   async fetchCompleteUserData(username) {
     try {
-      console.log(`Fetching GitHub data for: ${username}`);
+
 
       // Fetch profile and repositories in parallel
       const [profile, repositories] = await Promise.all([
@@ -285,12 +285,12 @@ export class GitHubService {
       const cachedData = await this.getCachedGitHubData(userId);
       
       if (!forceRefresh && cachedData && !this.needsRefresh(cachedData.last_fetched)) {
-        console.log('Using cached GitHub data');
+
         return cachedData;
       }
 
       // Fetch fresh data
-      console.log('Fetching fresh GitHub data');
+
       const githubData = await this.fetchCompleteUserData(username);
       
       // Save to cache
@@ -304,7 +304,7 @@ export class GitHubService {
       // Return cached data if available, even if stale
       const cachedData = await this.getCachedGitHubData(userId);
       if (cachedData) {
-        console.log('Returning stale cached data due to error');
+
         return cachedData;
       }
       

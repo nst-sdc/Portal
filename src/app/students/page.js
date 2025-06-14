@@ -1,16 +1,13 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
-import { FiSearch, FiFilter, FiGithub, FiAward, FiUser, FiMail, FiRefreshCw } from "react-icons/fi";
+import { FiSearch, FiFilter, FiGithub, FiAward, FiMail, FiRefreshCw } from "react-icons/fi";
 import { studentsService } from '@/lib/services/students';
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function Students() {
-  const searchParams = useSearchParams();
-  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,42 +18,28 @@ export default function Students() {
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Check URL parameters for initial filters
-  useEffect(() => {
-    const batchParam = searchParams.get('batch');
-    if (batchParam) {
-      setSelectedBatch(batchParam);
-    }
-    
-    const searchParam = searchParams.get('search');
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-    
-    const sortByParam = searchParams.get('sortBy');
-    if (sortByParam) {
-      setSortBy(sortByParam);
-    }
-    
-    const sortOrderParam = searchParams.get('sortOrder');
-    if (sortOrderParam === 'asc' || sortOrderParam === 'desc') {
-      setSortOrder(sortOrderParam);
-    }
-  }, [searchParams]);
-
-  // Fetch students from Supabase
+  // Load initial data and URL parameters
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
+        // Get URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const search = params.get('search');
+        const batch = params.get('batch');
+        if (search) setSearchTerm(search);
+        if (batch) setSelectedBatch(batch);
+
+        // Fetch students data
         const filters = {
-          search: searchTerm,
-          batch: selectedBatch
+          search: search || '',
+          batch: batch || ''
         };
 
         const studentsData = await studentsService.getAllStudents(filters);
+
         setStudents(studentsData);
         setFilteredStudents(studentsData);
       } catch (err) {
@@ -82,6 +65,7 @@ export default function Students() {
       };
 
       const studentsData = await studentsService.getAllStudents(filters);
+
       setStudents(studentsData);
       setFilteredStudents(studentsData);
     } catch (err) {

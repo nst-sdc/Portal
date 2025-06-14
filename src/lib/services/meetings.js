@@ -9,21 +9,9 @@ export class MeetingsService {
         .from('meetings')
         .select(`
           *,
-          created_by_profile:profiles!meetings_created_by_fkey(id, full_name, avatar_url),
-          project:projects(id, name, status),
-          meeting_invites(
-            id,
-            status,
-            user:profiles(id, full_name, avatar_url)
-          ),
-          attendance(
-            id,
-            status,
-            user:profiles(id, full_name, avatar_url)
-          )
+          created_by_profile:profiles!meetings_created_by_fkey(id, full_name, avatar_url)
         `)
-        .order('date', { ascending: true })
-        .order('start_time', { ascending: true });
+        .order('date', { ascending: false });
 
       // Apply filters
       if (filters.upcoming) {
@@ -45,8 +33,8 @@ export class MeetingsService {
       }
 
       if (filters.userId) {
-        // Filter meetings where user is invited
-        query = query.eq('meeting_invites.user_id', filters.userId);
+        // Filter meetings created by user
+        query = query.eq('created_by', filters.userId);
       }
 
       if (filters.attendanceOpen !== undefined) {
@@ -59,7 +47,7 @@ export class MeetingsService {
         throw error;
       }
 
-      return meetings.map(meeting => this.transformMeetingData(meeting, filters.userId));
+      return meetings.map(meeting => this.transformMeetingData(meeting));
 
     } catch (error) {
       console.error('Error fetching meetings:', error);
@@ -74,8 +62,6 @@ export class MeetingsService {
         .from('meetings')
         .select(`
           *,
-          created_by_profile:profiles!meetings_created_by_fkey(id, full_name, avatar_url),
-          project:projects(id, name, status, description),
           meeting_invites(
             id,
             status,
@@ -124,11 +110,7 @@ export class MeetingsService {
           attendance_open: meetingData.openAttendanceImmediately || false,
           attendance_code: attendanceCode
         })
-        .select(`
-          *,
-          created_by_profile:profiles!meetings_created_by_fkey(id, full_name, avatar_url),
-          project:projects(id, name)
-        `)
+        .select('*')
         .single();
 
       if (error) {
@@ -349,13 +331,7 @@ export class MeetingsService {
   }
 
   // Transform meeting data to match expected format
-  transformMeetingData(meeting, currentUserId = null) {
-    const invites = meeting.meeting_invites || [];
-    const attendance = meeting.attendance || [];
-    
-    // Check if current user is invited
-    const userInvite = currentUserId ? invites.find(invite => invite.user.id === currentUserId) : null;
-    const userAttendance = currentUserId ? attendance.find(att => att.user.id === currentUserId) : null;
+  transformMeetingData(meeting) {
 
     return {
       id: meeting.id,
@@ -377,19 +353,8 @@ export class MeetingsService {
       notes: meeting.notes,
       recordingUrl: meeting.recording_url,
       createdBy: meeting.created_by_profile,
-      project: meeting.project,
       createdAt: meeting.created_at,
-      updatedAt: meeting.updated_at,
-      // User-specific data
-      isInvited: !!userInvite,
-      inviteStatus: userInvite?.status,
-      hasAttended: !!userAttendance,
-      attendanceStatus: userAttendance?.status,
-      // Stats
-      totalInvites: invites.length,
-      totalAttendance: attendance.filter(a => a.status === 'present').length,
-      attendanceRate: invites.length > 0 ? 
-        Math.round((attendance.filter(a => a.status === 'present').length / invites.length) * 100) : 0
+      updatedAt: meeting.updated_at
     };
   }
 

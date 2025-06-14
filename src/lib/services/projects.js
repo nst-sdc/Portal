@@ -1,63 +1,43 @@
-// Projects data service - replaces mock data with real Supabase queries
 import { supabase } from '@/lib/supabase';
 
 export class ProjectsService {
   // Fetch all projects
   async getAllProjects(filters = {}) {
     try {
-      let query = supabase
-        .from('projects')
-        .select(`
-          *,
-          created_by_profile:profiles!projects_created_by_fkey(id, full_name, avatar_url, github_username),
-          project_lead_profile:profiles!projects_project_lead_fkey(id, full_name, avatar_url, github_username),
-          project_members (
-            id,
-            role,
-            is_active,
-            user:profiles(id, full_name, avatar_url, github_username)
-          ),
-          contributions (
-            id,
-            contribution_type,
-            points_awarded
-          )
-        `)
-        .order('created_at', { ascending: false });
+      // Build query parameters
+      const params = new URLSearchParams();
 
-      // Apply filters
-      if (filters.status) {
-        query = query.eq('status', filters.status);
-      }
-
-      if (filters.isPublic !== undefined) {
-        query = query.eq('is_public', filters.isPublic);
+      if (filters.search) {
+        params.append('search', filters.search);
       }
 
       if (filters.userId) {
-        // Filter projects where user is creator, lead, or member
-        query = query.or(`created_by.eq.${filters.userId},project_lead.eq.${filters.userId}`);
+        params.append('userId', filters.userId);
       }
 
-      if (filters.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      if (filters.status) {
+        params.append('status', filters.status);
       }
 
       if (filters.techStack && filters.techStack.length > 0) {
-        query = query.overlaps('tech_stack', filters.techStack);
+        params.append('techStack', filters.techStack[0]); // For simplicity, use first tech stack
       }
 
-      if (filters.difficultyLevel) {
-        query = query.eq('difficulty_level', filters.difficultyLevel);
+      // Make API call
+      const response = await fetch(`/api/projects?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const { data: projects, error } = await query;
+      const result = await response.json();
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch projects');
       }
 
-      return projects.map(project => this.transformProjectData(project, filters.userId));
+      // Transform the data to match expected format
+      return result.data.map(project => this.transformProjectData(project));
 
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -72,8 +52,6 @@ export class ProjectsService {
         .from('projects')
         .select(`
           *,
-          created_by_profile:profiles!projects_created_by_fkey(id, full_name, avatar_url, github_username),
-          project_lead_profile:profiles!projects_project_lead_fkey(id, full_name, avatar_url, github_username),
           project_members (
             id,
             role,
@@ -93,15 +71,6 @@ export class ProjectsService {
             contribution_date,
             github_url,
             user:profiles(id, full_name, avatar_url)
-          ),
-          meetings (
-            id,
-            title,
-            date,
-            start_time,
-            location,
-            meeting_type,
-            attendance_open
           )
         `)
         .eq('id', id)
@@ -122,34 +91,33 @@ export class ProjectsService {
   // Create new project
   async createProject(projectData, userId) {
     try {
-      const { data: project, error } = await supabase
-        .from('projects')
-        .insert({
-          ...projectData,
-          created_by: userId,
-          project_lead: projectData.project_lead || userId
-        })
-        .select(`
-          *,
-          created_by_profile:profiles!projects_created_by_fkey(id, full_name, avatar_url),
-          project_lead_profile:profiles!projects_project_lead_fkey(id, full_name, avatar_url)
-        `)
-        .single();
 
-      if (error) {
-        throw error;
+
+      // Use the proper API route with service role key
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...projectData,
+          created_by: userId
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      // Add creator as project member
-      await supabase
-        .from('project_members')
-        .insert({
-          project_id: project.id,
-          user_id: userId,
-          role: 'lead'
-        });
+      const result = await response.json();
 
-      return this.transformProjectData(project);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create project');
+      }
+
+
+      return this.transformProjectData(result.data);
 
     } catch (error) {
       console.error('Error creating project:', error);
@@ -163,11 +131,11 @@ export class ProjectsService {
       // Check if user has permission to update
       const { data: project } = await supabase
         .from('projects')
-        .select('created_by, project_lead')
+        .select('created_by')
         .eq('id', id)
         .single();
 
-      if (!project || (project.created_by !== userId && project.project_lead !== userId)) {
+      if (!project || project.created_by !== userId) {
         throw new Error('Unauthorized to update this project');
       }
 
@@ -175,11 +143,7 @@ export class ProjectsService {
         .from('projects')
         .update(updates)
         .eq('id', id)
-        .select(`
-          *,
-          created_by_profile:profiles!projects_created_by_fkey(id, full_name, avatar_url),
-          project_lead_profile:profiles!projects_project_lead_fkey(id, full_name, avatar_url)
-        `)
+        .select('*')
         .single();
 
       if (error) {
@@ -270,8 +234,7 @@ export class ProjectsService {
       // Get total projects by status
       const { data: statusStats } = await supabase
         .from('projects')
-        .select('status')
-        .eq('is_public', true);
+        .select('status');
 
       // Get total members across all projects
       const { count: totalMembers } = await supabase
@@ -325,8 +288,8 @@ export class ProjectsService {
       stars: project.github_stars || 0,
       forks: project.github_forks || 0,
       contributors: activeMembers.length,
-      owner: project.created_by_profile?.github_username || project.created_by_profile?.full_name,
-      projectLead: project.project_lead_profile,
+      owner: project.created_by || 'Unknown',
+      projectLead: null, // Will be populated separately if needed
       repoUrl: project.github_repo_url,
       liveUrl: project.live_demo_url,
       isUserProject: isUserProject,
@@ -410,10 +373,9 @@ export class ProjectsService {
         .from('projects')
         .select(`
           *,
-          project_members!inner(count),
+          project_members(count),
           contributions(count)
         `)
-        .eq('is_public', true)
         .eq('status', 'active')
         .order('updated_at', { ascending: false })
         .limit(limit);
@@ -426,6 +388,122 @@ export class ProjectsService {
 
     } catch (error) {
       console.error('Error fetching trending projects:', error);
+      throw error;
+    }
+  }
+
+  // Get project by ID with full details
+  async getProjectById(id) {
+    try {
+      const { data: project, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          project_members(
+            id,
+            role,
+            is_active,
+            user_id,
+            user:profiles(id, full_name, avatar_url, github_username)
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      return this.transformProjectData(project);
+
+    } catch (error) {
+      console.error('Error fetching project:', error);
+      throw error;
+    }
+  }
+
+  // Get project members
+  async getProjectMembers(projectId) {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/members`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch project members');
+      }
+
+      return result.data;
+
+    } catch (error) {
+      console.error('Error fetching project members:', error);
+      throw error;
+    }
+  }
+
+  // Assign student to project
+  async assignStudentToProject(projectId, userId, role = 'member') {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          role: role
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to assign student to project');
+      }
+
+      return result.data;
+
+    } catch (error) {
+      console.error('Error assigning student to project:', error);
+      throw error;
+    }
+  }
+
+  // Remove member from project
+  async removeMemberFromProject(projectId, memberId) {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/members?memberId=${memberId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to remove member from project');
+      }
+
+      return true;
+
+    } catch (error) {
+      console.error('Error removing member from project:', error);
       throw error;
     }
   }

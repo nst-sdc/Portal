@@ -17,6 +17,7 @@ import {
   FiGitPullRequest,
   FiBulb
 } from "react-icons/fi";
+import { BsLightbulb } from "react-icons/bs";
 
 // Mock data for students (in a real app, this would come from an API)
 const mockStudents = [
@@ -530,7 +531,7 @@ export default function StudentDetail() {
                     <span><strong>PRs Merged:</strong> 10 points per PR</span>
                   </li>
                   <li className="flex items-start">
-                    <FiLightbulb className="text-blue-500 mt-1 mr-2 flex-shrink-0" />
+                    <BsLightbulb className="text-blue-500 mt-1 mr-2 flex-shrink-0" />
                     <span><strong>Project Ideas:</strong> 10 points per idea</span>
                   </li>
                 </ul>

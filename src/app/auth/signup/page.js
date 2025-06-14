@@ -72,7 +72,7 @@ export default function SignUp() {
     }
 
     try {
-      console.log('Attempting sign up with:', formData.email);
+
       const { data, error } = await signUp(formData.email, formData.password, {
         data: {
           full_name: formData.name,
@@ -81,7 +81,7 @@ export default function SignUp() {
         }
       });
 
-      console.log('Sign up response:', { data, error });
+
 
       if (error) {
         setError(error.message);

@@ -1,163 +1,206 @@
-// API routes for meetings management
-import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
-// GET /api/meetings - Fetch meetings
-export async function GET(request) {
+import { NextResponse } from "next/server";
+import { createClient } from '@supabase/supabase-js';
+import { meetingsService } from '@/lib/services/meetings';
+
+// Create a server-side Supabase client that can bypass RLS
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
+// GET /api/meetings -> get all meetings
+export async function GET() {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { searchParams } = new URL(request.url);
-    
-    // Parse query parameters
-    const upcoming = searchParams.get('upcoming') === 'true';
-    const userId = searchParams.get('userId');
-    const limit = parseInt(searchParams.get('limit')) || 50;
-    const offset = parseInt(searchParams.get('offset')) || 0;
-
-    // Build query
-    let query = supabase
-      .from('meetings')
-      .select(`
-        *,
-        created_by_profile:profiles!meetings_created_by_fkey(id, full_name, avatar_url),
-        project:projects(id, name),
-        attendance_count:attendance(count),
-        user_attendance:attendance!inner(status)
-      `)
-      .order('date', { ascending: true })
-      .order('start_time', { ascending: true })
-      .range(offset, offset + limit - 1);
-
-    // Filter upcoming meetings
-    if (upcoming) {
-      const today = new Date().toISOString().split('T')[0];
-      query = query.gte('date', today);
-    }
-
-    // Filter by user attendance if userId provided
-    if (userId) {
-      query = query.eq('user_attendance.user_id', userId);
-    }
-
-    const { data: meetings, error } = await query;
-
-    if (error) {
-      throw error;
-    }
+    const meetings = await meetingsService.getAllMeetings();
 
     return NextResponse.json({
       success: true,
-      data: meetings,
-      count: meetings.length
+      data: meetings
     });
-
   } catch (error) {
-    console.error('Error fetching meetings:', error);
-    
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch meetings',
-        details: error.message 
-      },
-      { status: 500 }
-    );
+    console.error("Error fetching meetings:", error);
+
+    return NextResponse.json({
+      success: false,
+      error: error.message
+    }, { status: 500 });
   }
 }
 
-// POST /api/meetings - Create new meeting
+// POST /api/meetings -> create meeting
 export async function POST(request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const body = await request.json();
-    
+    console.log('Meeting creation request body:', body);
+
+    const {
+      title,
+      description,
+      date,
+      time,
+      location,
+      meeting_type = 'general',
+      max_attendees,
+      is_mandatory = false,
+      created_by
+    } = body;
+
+    console.log('Extracted fields:', { title, description, date, time, location, created_by });
+
     // Validate required fields
-    if (!body.title || !body.date || !body.start_time || !body.location) {
-      return NextResponse.json(
-        { error: 'Title, date, start time, and location are required' },
-        { status: 400 }
-      );
+    if (!title || !date || !time || !location || !created_by) {
+      return NextResponse.json({
+        error: "Missing required fields: title, date, time, location, created_by"
+      }, { status: 400 });
     }
 
-    // Generate attendance code if attendance should be opened immediately
-    let attendanceCode = null;
-    if (body.openAttendanceImmediately) {
-      attendanceCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    // Validate date and time format
+    const meetingDate = new Date(date);
+    if (isNaN(meetingDate.getTime())) {
+      return NextResponse.json({
+        error: "Invalid date format"
+      }, { status: 400 });
     }
 
-    // Create meeting
-    const meetingData = {
-      title: body.title,
-      description: body.description,
-      meeting_type: body.meeting_type || 'general',
-      date: body.date,
-      start_time: body.start_time,
-      end_time: body.end_time,
-      duration_minutes: body.duration_minutes || 60,
-      location: body.location,
-      meeting_link: body.meeting_link,
-      max_attendees: body.max_attendees,
-      is_mandatory: body.is_mandatory || false,
-      attendance_open: body.openAttendanceImmediately || false,
-      attendance_code: attendanceCode,
-      agenda: body.agenda,
-      created_by: user.id,
-      project_id: body.project_id
-    };
+    // Validate time format (should be HH:MM)
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(time)) {
+      return NextResponse.json({
+        error: "Invalid time format. Please use HH:MM format"
+      }, { status: 400 });
+    }
 
-    const { data: meeting, error } = await supabase
+    // Create meeting in database using admin client
+    const { data: meeting, error } = await supabaseAdmin
       .from('meetings')
-      .insert(meetingData)
-      .select(`
-        *,
-        created_by_profile:profiles!meetings_created_by_fkey(id, full_name, avatar_url),
-        project:projects(id, name)
-      `)
+      .insert([{
+        title,
+        description,
+        date: date, // Keep date as date string (YYYY-MM-DD)
+        start_time: time, // Keep time as time string (HH:MM)
+        end_time: null, // Can be set later if needed
+        duration_minutes: 60, // Default duration
+        location,
+        meeting_type,
+        max_attendees,
+        is_mandatory,
+        created_by
+      }])
+      .select()
       .single();
 
     if (error) {
       throw error;
     }
 
-    // Create meeting invites for selected attendees
-    if (body.attendees && body.attendees.length > 0) {
-      const invites = body.attendees.map(attendeeId => ({
-        meeting_id: meeting.id,
-        user_id: attendeeId,
-        invited_by: user.id
-      }));
+    // Generate attendance code
+    const attendanceCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-      await supabase
-        .from('meeting_invites')
-        .insert(invites);
+    // Update meeting with attendance code
+    const { error: updateError } = await supabaseAdmin
+      .from('meetings')
+      .update({ attendance_code: attendanceCode })
+      .eq('id', meeting.id);
+
+    if (updateError) {
+      console.error('Error updating attendance code:', updateError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { ...meeting, attendance_code: attendanceCode },
+      message: "Meeting created successfully"
+    });
+
+  } catch (error) {
+    console.error("Meeting creation error:", error);
+
+    return NextResponse.json({
+      success: false,
+      error: error.message || "Failed to create meeting"
+    }, { status: 500 });
+  }
+}
+
+// PUT /api/meetings -> update meeting
+export async function PUT(request) {
+  try {
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json({
+        error: "Meeting ID is required"
+      }, { status: 400 });
+    }
+
+    // Update meeting in database
+    const { data: meeting, error } = await supabaseAdmin
+      .from('meetings')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
     }
 
     return NextResponse.json({
       success: true,
       data: meeting,
-      message: 'Meeting created successfully'
+      message: "Meeting updated successfully"
     });
 
   } catch (error) {
-    console.error('Error creating meeting:', error);
-    
-    return NextResponse.json(
-      { 
-        error: 'Failed to create meeting',
-        details: error.message 
-      },
-      { status: 500 }
-    );
+    console.error("Meeting update error:", error);
+
+    return NextResponse.json({
+      success: false,
+      error: error.message || "Failed to update meeting"
+    }, { status: 500 });
+  }
+}
+
+// DELETE /api/meetings -> delete meeting
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({
+        error: "Meeting ID is required"
+      }, { status: 400 });
+    }
+
+    // Delete meeting from database
+    const { error } = await supabaseAdmin
+      .from('meetings')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Meeting deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Meeting deletion error:", error);
+
+    return NextResponse.json({
+      success: false,
+      error: error.message || "Failed to delete meeting"
+    }, { status: 500 });
   }
 }

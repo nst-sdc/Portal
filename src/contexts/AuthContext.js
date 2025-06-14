@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -57,13 +57,13 @@ export const AuthProvider = ({ children }) => {
   const signUp = async (email, password, options = {}) => {
     try {
       setLoading(true);
-      console.log('Attempting sign up with:', email);
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options
       });
-      console.log('Sign up response:', { data, error });
+
       return { data, error };
     } catch (error) {
       console.error('Sign up catch error:', error);
@@ -77,12 +77,12 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     try {
       setLoading(true);
-      console.log('Attempting sign in with:', email);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
-      console.log('Sign in response:', { data, error });
+
       return { data, error };
     } catch (error) {
       console.error('Sign in catch error:', error);

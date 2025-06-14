@@ -21,7 +21,7 @@ export default function SignIn() {
     const testConnection = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
-        console.log('Supabase connection test:', { data, error });
+
       } catch (err) {
         console.error('Supabase connection error:', err);
       }
@@ -73,7 +73,7 @@ export default function SignIn() {
     setError("");
 
     try {
-      console.log('Creating test user...');
+
       const { data, error } = await supabase.auth.signUp({
         email: 'testuser' + Date.now() + '@gmail.com',
         password: 'testpassword123',
@@ -81,7 +81,7 @@ export default function SignIn() {
           emailRedirectTo: undefined // Skip email confirmation
         }
       });
-      console.log('Test user creation result:', { data, error });
+
 
       if (error) {
         setError(`Test user creation failed: ${error.message}`);

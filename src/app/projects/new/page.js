@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiArrowLeft, FiGithub, FiLink, FiPlus, FiX } from "react-icons/fi";
+import { useAuth } from "@/contexts/AuthContext";
+import { projectsService } from "@/lib/services/projects";
 
 export default function NewProject() {
   const router = useRouter();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -99,27 +102,52 @@ export default function NewProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
+    if (!user) {
+      setErrors({
+        ...errors,
+        form: "You must be logged in to create a project."
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    
+
     try {
-      // In a real app, you would send this data to your API
-      console.log("Submitting project:", formData);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Redirect to projects page after successful submission
-      router.push("/projects");
+
+
+      // Prepare project data for API
+      const projectData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        long_description: formData.longDescription.trim(),
+        tech_stack: formData.tags,
+        github_repo_url: formData.repoUrl.trim(),
+        live_demo_url: formData.demoUrl.trim() || null,
+        status: 'planning',
+        difficulty_level: 'intermediate',
+        priority: 'medium',
+        is_public: true,
+        max_members: 5,
+        created_by: user.id
+      };
+
+      // Create project using the projects service
+      const newProject = await projectsService.createProject(projectData, user.id);
+
+
+
+      // Redirect to the new project page
+      router.push(`/projects/${newProject.id}`);
     } catch (error) {
       console.error("Error submitting project:", error);
       setErrors({
         ...errors,
-        form: "Failed to submit project. Please try again."
+        form: error.message || "Failed to submit project. Please try again."
       });
     } finally {
       setIsSubmitting(false);

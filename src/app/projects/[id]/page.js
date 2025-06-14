@@ -3,16 +3,22 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { 
-  FiGithub, 
-  FiStar, 
-  FiCode, 
-  FiUsers, 
-  FiArrowLeft, 
-  FiCalendar, 
+import {
+  FiGithub,
+  FiStar,
+  FiCode,
+  FiUsers,
+  FiArrowLeft,
+  FiCalendar,
   FiEdit3,
-  FiExternalLink
+  FiExternalLink,
+  FiPlus,
+  FiX,
+  FiUserPlus
 } from "react-icons/fi";
+import { useAuth } from "@/contexts/AuthContext";
+import { projectsService } from "@/lib/services/projects";
+import { studentsService } from "@/lib/services/students";
 
 // Mock data for projects (in a real app, this would come from an API)
 const mockProjects = [
@@ -71,21 +77,43 @@ We welcome contributions! Please see our contributing guidelines for more detail
 
 export default function ProjectDetail() {
   const params = useParams();
+  const { user } = useAuth();
   const [project, setProject] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [availableStudents, setAvailableStudents] = useState([]);
+  const [projectMembers, setProjectMembers] = useState([]);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assigningStudent, setAssigningStudent] = useState(false);
 
   useEffect(() => {
-    const fetchProject = async () => {
-      // In a real app, you would fetch data from an API
-      setTimeout(() => {
-        const foundProject = mockProjects.find(p => p.id === parseInt(params.id));
-        setProject(foundProject || null);
+    const fetchProjectData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Fetch project details
+        const projectData = await projectsService.getProjectById(params.id);
+        setProject(projectData);
+
+        // Fetch project members
+        const members = await projectsService.getProjectMembers(params.id);
+        setProjectMembers(members);
+
+        // Fetch available students for assignment
+        const students = await studentsService.getAllStudents();
+        setAvailableStudents(students);
+
+      } catch (error) {
+        console.error('Error fetching project data:', error);
+        setProject(null);
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
     };
 
-    fetchProject();
+    if (params.id) {
+      fetchProjectData();
+    }
   }, [params.id]);
 
   if (isLoading) {
@@ -125,12 +153,64 @@ export default function ProjectDetail() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
+
+  const handleAssignStudent = async (studentId, role = 'member') => {
+    try {
+      setAssigningStudent(true);
+
+      await projectsService.assignStudentToProject(params.id, studentId, role);
+
+      // Refresh project members
+      const updatedMembers = await projectsService.getProjectMembers(params.id);
+      setProjectMembers(updatedMembers);
+
+      setShowAssignModal(false);
+
+      // Show success message
+      const studentName = availableStudents.find(s => s.id === studentId)?.name || 'Student';
+      alert(`${studentName} successfully assigned as ${role}!`);
+    } catch (error) {
+      console.error('Error assigning student:', error);
+
+      // Show specific error message
+      let errorMessage = 'Failed to assign student to project';
+      if (error.message.includes('already a member')) {
+        errorMessage = 'This student is already an active member of this project';
+      } else if (error.message.includes('constraint')) {
+        errorMessage = 'Invalid role selected. Please try again.';
+      } else if (error.message.includes('duplicate key')) {
+        errorMessage = 'This student is already associated with this project';
+      }
+
+      alert(errorMessage);
+    } finally {
+      setAssigningStudent(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId) => {
+    try {
+      await projectsService.removeMemberFromProject(params.id, memberId);
+
+      // Refresh project members
+      const updatedMembers = await projectsService.getProjectMembers(params.id);
+      setProjectMembers(updatedMembers);
+    } catch (error) {
+      console.error('Error removing member:', error);
+      alert('Failed to remove member from project');
+    }
+  };
+
+  // Filter out students who are already members
+  const availableStudentsForAssignment = availableStudents.filter(
+    student => !projectMembers.some(member => member.userId === student.id)
+  );
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -233,37 +313,74 @@ export default function ProjectDetail() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Project Overview</h2>
             <p className="text-gray-700 dark:text-gray-300 mb-6">
-              {project.longDescription}
+              {project.longDescription || project.description}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+            {/* Project Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <h3 className="text-lg font-medium mb-2">Repository</h3>
-                <a
-                  href={project.repoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-primary hover:underline"
-                >
-                  <FiGithub className="mr-2" /> View on GitHub
-                </a>
-              </div>
-              {project.demoUrl && (
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Live Demo</h3>
-                  <a
-                    href={project.demoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-primary hover:underline"
-                  >
-                    <FiExternalLink className="mr-2" /> View Demo
-                  </a>
+                <h3 className="text-lg font-medium mb-3">Project Information</h3>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+                    <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                      project.status === 'active' ? 'bg-green-100 text-green-800' :
+                      project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {project.status}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Difficulty:</span>
+                    <span className="ml-2 font-medium">{project.difficultyLevel}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Max Members:</span>
+                    <span className="ml-2 font-medium">{project.maxMembers}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Current Members:</span>
+                    <span className="ml-2 font-medium">{projectMembers.length}</span>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium mb-3">Links</h3>
+                <div className="space-y-2">
+                  {project.repoUrl && (
+                    <div>
+                      <a
+                        href={project.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-primary hover:underline"
+                      >
+                        <FiGithub className="mr-2" /> View on GitHub
+                      </a>
+                    </div>
+                  )}
+                  {project.liveUrl && (
+                    <div>
+                      <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-primary hover:underline"
+                      >
+                        <FiExternalLink className="mr-2" /> View Live Demo
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Timeline */}
             <div>
-              <h3 className="text-lg font-medium mb-2">Timeline</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <h3 className="text-lg font-medium mb-3">Timeline</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Created</p>
                   <p className="font-medium">{formatDate(project.createdAt)}</p>
@@ -272,6 +389,18 @@ export default function ProjectDetail() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
                   <p className="font-medium">{formatDate(project.updatedAt)}</p>
                 </div>
+                {project.startDate && (
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Start Date</p>
+                    <p className="font-medium">{formatDate(project.startDate)}</p>
+                  </div>
+                )}
+                {project.endDate && (
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">End Date</p>
+                    <p className="font-medium">{formatDate(project.endDate)}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -279,22 +408,55 @@ export default function ProjectDetail() {
 
         {activeTab === "contributors" && (
           <div>
-            <h2 className="text-xl font-semibold mb-4">Project Contributors</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {project.contributors.map((contributor) => (
-                <div key={contributor.id} className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <img
-                    src={contributor.avatar}
-                    alt={contributor.name}
-                    className="w-12 h-12 rounded-full mr-4"
-                  />
-                  <div>
-                    <h3 className="font-medium">{contributor.name}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{contributor.role}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Project Members</h2>
+              {user && (
+                <button
+                  onClick={() => setShowAssignModal(true)}
+                  className="btn-primary flex items-center"
+                >
+                  <FiUserPlus className="mr-2" />
+                  Assign Student
+                </button>
+              )}
             </div>
+
+            {projectMembers.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <FiUsers className="mx-auto h-12 w-12 mb-4" />
+                <p>No members assigned to this project yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {projectMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center">
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="w-12 h-12 rounded-full mr-4"
+                      />
+                      <div>
+                        <h3 className="font-medium">{member.name}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{member.role}</p>
+                        {member.githubUsername && (
+                          <p className="text-xs text-gray-500">@{member.githubUsername}</p>
+                        )}
+                      </div>
+                    </div>
+                    {user && (
+                      <button
+                        onClick={() => handleRemoveMember(member.id)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Remove member"
+                      >
+                        <FiX className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -309,6 +471,88 @@ export default function ProjectDetail() {
           </div>
         )}
       </div>
+
+      {/* Student Assignment Modal */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Assign Student to Project</h3>
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FiX className="h-5 w-5" />
+              </button>
+            </div>
+
+            {availableStudentsForAssignment.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>No available students to assign.</p>
+                <p className="text-sm mt-2">All students are already members of this project.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {availableStudentsForAssignment.map((student) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <div className="flex items-center">
+                      <img
+                        src={student.avatar}
+                        alt={student.name}
+                        className="w-10 h-10 rounded-full mr-3"
+                      />
+                      <div>
+                        <h4 className="font-medium">{student.name}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {student.batch} • {student.rewardPoints} points
+                        </p>
+                        {student.githubUsername && (
+                          <p className="text-xs text-gray-500">@{student.githubUsername}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleAssignStudent(student.id, 'member')}
+                        disabled={assigningStudent}
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50"
+                      >
+                        Member
+                      </button>
+                      <button
+                        onClick={() => handleAssignStudent(student.id, 'contributor')}
+                        disabled={assigningStudent}
+                        className="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600 disabled:opacity-50"
+                      >
+                        Contributor
+                      </button>
+                      <button
+                        onClick={() => handleAssignStudent(student.id, 'lead')}
+                        disabled={assigningStudent}
+                        className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 disabled:opacity-50"
+                      >
+                        Lead
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

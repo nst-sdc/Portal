@@ -18,7 +18,7 @@ export default function Debug() {
         const testResults = {};
 
         // Test 1: Direct Supabase connection
-        console.log('Testing Supabase connection...');
+
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
@@ -32,7 +32,7 @@ export default function Debug() {
         };
 
         // Test 2: Students service
-        console.log('Testing students service...');
+
         try {
           const students = await studentsService.getAllStudents();
           testResults.studentsService = {
@@ -52,7 +52,7 @@ export default function Debug() {
 
         // Test 3: Dashboard service (if user is authenticated)
         if (user) {
-          console.log('Testing dashboard service...');
+
           try {
             const dashboardData = await dashboardService.getDashboardStats(user.id);
             testResults.dashboardService = {
@@ -70,7 +70,7 @@ export default function Debug() {
         }
 
         // Test 4: GitHub stats
-        console.log('Testing GitHub stats...');
+
         const { data: githubStats, error: githubError } = await supabase
           .from('github_stats')
           .select('*')
@@ -85,7 +85,7 @@ export default function Debug() {
 
         // Test 5: Create sample data if none exists
         if (profiles?.length === 0) {
-          console.log('No profiles found, creating sample data...');
+
           try {
             const sampleProfile = {
               username: 'sample_user',
