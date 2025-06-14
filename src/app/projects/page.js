@@ -171,7 +171,6 @@ export default function Projects() {
         </div>
       </div>
 
-        {/* Filters and Search */}
         <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -199,7 +198,6 @@ export default function Projects() {
             </div>
           </div>
 
-          {/* Tags filter */}
           <div className="mt-4">
             <div className="flex items-center mb-2">
               <FiFilter className="mr-2 text-gray-500" />
@@ -223,7 +221,6 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* Projects Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (

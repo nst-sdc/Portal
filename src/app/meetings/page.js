@@ -149,7 +149,6 @@ export default function MeetingsPage() {
           </div>
         )}
 
-        {/* Tab Navigation */}
         <div className="flex space-x-1 mb-6">
           <button
             onClick={() => setActiveTab("list")}
@@ -181,18 +180,7 @@ export default function MeetingsPage() {
           >
             Past ({pastMeetings.length})
           </button>
-          <button
-            onClick={() => setActiveTab("create")}
-            className={`px-4 py-2 rounded-lg font-medium ${
-              activeTab === "create"
-                ? "bg-primary text-white"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-            }`}
-          >
-            Create New
-          </button>
         </div>
-        {/* Meetings List */}
         {(activeTab === "list" || activeTab === "upcoming" || activeTab === "past") && (
           <div>
             {loading ? (
@@ -308,7 +296,6 @@ export default function MeetingsPage() {
           </div>
         )}
 
-        {/* Create Meeting Form */}
         {activeTab === "create" && (
           <div>
             <h2 className="text-2xl font-bold mb-6">Schedule a New Meeting</h2>

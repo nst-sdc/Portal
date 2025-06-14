@@ -18,8 +18,6 @@ export default function Home() {
     e.preventDefault();
     setLoginLoading(true);
     try {
-      // TODO: integrate real login logic
-      // Simulate success:
       router.push(role === 'admin' ? '/dashboard' : '/member');
     } catch (error) {
       setError(error.message);
@@ -34,7 +32,7 @@ export default function Home() {
         <div className="text-center space-y-2">
           <Image src="/logo.png" alt="NST Dev Club" width={72} height={72} className="mx-auto pulse-subtle" />
           <h1 className="text-3xl font-bold gradient-text">NST Dev Club Portal</h1>
-          {/* Role toggle */}
+
           <div className="inline-flex rounded-md overflow-hidden border border-gray-700 mt-4">
             <button
               type="button"
@@ -94,7 +92,6 @@ export default function Home() {
           </button>
         </form>
 
-        {/* OAuth buttons removed */}
 
         <p className="text-center text-xs text-gray-500 pt-4">
           New here? <Link href="/auth/signup" className="text-primary hover:underline">Create an account</Link>

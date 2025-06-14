@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/supabaseClient"; // Import your Supabase client
 import Link from "next/link";
 import { 
   FiCalendar, 
@@ -15,19 +16,6 @@ import {
   FiX
 } from "react-icons/fi";
 
-// Mock data for students (in a real app, this would come from an API)
-const mockStudents = [
-  { id: 1, name: "John Doe", avatar: "https://i.pravatar.cc/150?img=1", batch: "2023" },
-  { id: 2, name: "Jane Smith", avatar: "https://i.pravatar.cc/150?img=2", batch: "2023" },
-  { id: 3, name: "Mike Johnson", avatar: "https://i.pravatar.cc/150?img=3", batch: "2022" },
-  { id: 4, name: "Sarah Williams", avatar: "https://i.pravatar.cc/150?img=4", batch: "2023" },
-  { id: 5, name: "Alex Turner", avatar: "https://i.pravatar.cc/150?img=5", batch: "2022" },
-  { id: 6, name: "Emily Davis", avatar: "https://i.pravatar.cc/150?img=6", batch: "2024" },
-  { id: 7, name: "David Brown", avatar: "https://i.pravatar.cc/150?img=7", batch: "2024" },
-  { id: 8, name: "Lisa Johnson", avatar: "https://i.pravatar.cc/150?img=8", batch: "2022" },
-  { id: 9, name: "Kevin Wilson", avatar: "https://i.pravatar.cc/150?img=9", batch: "2023" },
-  { id: 10, name: "Olivia Martin", avatar: "https://i.pravatar.cc/150?img=10", batch: "2024" },
-];
 
 export default function NewMeeting() {
   const router = useRouter();
@@ -50,10 +38,19 @@ export default function NewMeeting() {
   });
 
   useEffect(() => {
-    // In a real app, you would fetch students from an API
-    setTimeout(() => {
-      setStudents(mockStudents);
-    }, 500);
+    const fetchStudents = async () => {
+      const { data, error } = await supabase
+        .from("profiles") // Replace with your actual table name
+        .select("*"); // Fetch all columns
+
+      if (error) {
+        console.error("Error fetching students:", error);
+      } else {
+        setStudents(data);
+      }
+    };
+
+    fetchStudents();
   }, []);
 
   const handleChange = (e) => {
@@ -217,7 +214,6 @@ export default function NewMeeting() {
           <h2 className="text-xl font-semibold mb-6">Meeting Details</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Title */}
             <div className="col-span-full">
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Meeting Title*
@@ -239,7 +235,6 @@ export default function NewMeeting() {
               )}
             </div>
             
-            {/* Date */}
             <div>
               <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Date*
@@ -265,7 +260,6 @@ export default function NewMeeting() {
               )}
             </div>
             
-            {/* Time */}
             <div>
               <label htmlFor="time" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Time*
@@ -291,7 +285,6 @@ export default function NewMeeting() {
               )}
             </div>
             
-            {/* Duration */}
             <div>
               <label htmlFor="duration" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Duration (minutes)
@@ -312,7 +305,6 @@ export default function NewMeeting() {
               </select>
             </div>
             
-            {/* Location */}
             <div className="col-span-full">
               <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Location*
@@ -339,7 +331,6 @@ export default function NewMeeting() {
               )}
             </div>
             
-            {/* Description */}
             <div className="col-span-full">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Description
@@ -356,7 +347,6 @@ export default function NewMeeting() {
               />
             </div>
             
-            {/* Open Attendance */}
             <div className="col-span-full">
               <div className="flex items-center">
                 <input
@@ -397,7 +387,6 @@ export default function NewMeeting() {
           )}
           
           <div className="mb-6 flex flex-col sm:flex-row gap-4">
-            {/* Search */}
             <div className="flex-1">
               <input
                 type="text"
@@ -409,7 +398,6 @@ export default function NewMeeting() {
               />
             </div>
             
-            {/* Batch Filter */}
             <div className="flex flex-wrap gap-2">
               {uniqueBatches.map(batch => (
                 <button

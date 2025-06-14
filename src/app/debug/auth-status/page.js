@@ -66,7 +66,6 @@ export default function AuthStatus() {
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-8">Authentication Status Debug</h1>
         
-        {/* Auth Context Status */}
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Auth Context Status</h2>
           <div className="space-y-2">
@@ -83,7 +82,6 @@ export default function AuthStatus() {
           </div>
         </div>
 
-        {/* Client Session Status */}
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Client Session Status</h2>
           <div className="space-y-2">
@@ -97,7 +95,6 @@ export default function AuthStatus() {
           </div>
         </div>
 
-        {/* Test Project Creation */}
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Test Project Creation</h2>
           <button 
@@ -122,7 +119,6 @@ export default function AuthStatus() {
           )}
         </div>
 
-        {/* Instructions */}
         <div className="card p-6">
           <h2 className="text-xl font-bold mb-4">Instructions</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">

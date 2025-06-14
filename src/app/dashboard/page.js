@@ -99,14 +99,14 @@ export default function Dashboard() {
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
           
-          {/* Stats skeleton */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
           
-          {/* Projects skeleton */}
+
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/5 mb-4"></div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
             {[...Array(3)].map((_, i) => (
@@ -114,7 +114,7 @@ export default function Dashboard() {
             ))}
           </div>
           
-          {/* Meetings skeleton */}
+
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/5 mb-4"></div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
             {[...Array(2)].map((_, i) => (
@@ -122,7 +122,7 @@ export default function Dashboard() {
             ))}
           </div>
           
-          {/* Activity skeleton */}
+
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
@@ -138,7 +138,7 @@ export default function Dashboard() {
     <>
       <Navigation />
       <div className="container mx-auto py-8 px-4">
-        {/* Welcome section */}
+
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">
@@ -165,7 +165,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        {/* Stats overview */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
@@ -248,7 +248,6 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* My Projects */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">My Projects</h2>
@@ -308,7 +307,6 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* Upcoming Meetings */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Upcoming Meetings</h2>
@@ -374,7 +372,6 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* Recent Activity */}
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Recent Activity</h2>

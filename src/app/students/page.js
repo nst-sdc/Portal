@@ -182,7 +182,6 @@ export default function Students() {
         </div>
       </div>
 
-      {/* Filters and Search */}
       <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
@@ -218,7 +217,6 @@ export default function Students() {
         </div>
       </div>
 
-      {/* Students Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (

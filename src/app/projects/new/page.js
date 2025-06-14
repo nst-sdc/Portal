@@ -156,7 +156,6 @@ export default function NewProject() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* Back button */}
       <Link href="/projects" className="inline-flex items-center text-primary hover:underline mb-6">
         <FiArrowLeft className="mr-2" /> Back to Projects
       </Link>
@@ -171,7 +170,6 @@ export default function NewProject() {
         )}
         
         <form onSubmit={handleSubmit} className="card p-6">
-          {/* Project Name */}
           <div className="mb-6">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Project Name *
@@ -190,7 +188,6 @@ export default function NewProject() {
             )}
           </div>
           
-          {/* Short Description */}
           <div className="mb-6">
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Short Description *
@@ -213,7 +210,6 @@ export default function NewProject() {
             </p>
           </div>
           
-          {/* Long Description */}
           <div className="mb-6">
             <label htmlFor="longDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Detailed Description
@@ -229,7 +225,6 @@ export default function NewProject() {
             />
           </div>
           
-          {/* Repository URL */}
           <div className="mb-6">
             <label htmlFor="repoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Repository URL *
@@ -253,7 +248,6 @@ export default function NewProject() {
             )}
           </div>
           
-          {/* Demo URL */}
           <div className="mb-6">
             <label htmlFor="demoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Demo URL (optional)
@@ -277,7 +271,6 @@ export default function NewProject() {
             )}
           </div>
           
-          {/* Tags */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Tags *
@@ -322,7 +315,6 @@ export default function NewProject() {
             </p>
           </div>
           
-          {/* Submit Button */}
           <div className="flex justify-end">
             <button
               type="submit"

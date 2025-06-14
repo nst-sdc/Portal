@@ -57,7 +57,6 @@ export default function MemberDashboard() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4">Welcome, {data.name}</h1>
 
-        {/* Dev Coins */}
         <div className="card flex items-center mb-8">
           <FiAward className="h-8 w-8 accent-emerald mr-4" />
           <div>
@@ -66,7 +65,6 @@ export default function MemberDashboard() {
           </div>
         </div>
 
-        {/* Assigned Projects */}
         <h2 className="text-2xl font-semibold mb-4">Assigned Projects</h2>
         <div className="grid md:grid-cols-2 gap-6">
           {data.projects.map((p) => (

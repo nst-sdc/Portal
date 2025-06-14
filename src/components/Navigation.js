@@ -25,7 +25,6 @@ export default function Navigation() {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    // Check if dark mode is enabled in local storage or system preference
     const isDarkMode = localStorage.getItem("darkMode") === "true" ||
       (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -65,7 +64,6 @@ export default function Navigation() {
     { name: "Meetings", href: "/meetings", icon: FiCalendar },
   ];
   
-  // Admin-only navigation items
   const adminNavItems = [
     { name: "New Project", href: "/projects/new", icon: FiCode },
     { name: "Schedule Meeting", href: "/meetings/new", icon: FiCalendar },
@@ -75,7 +73,6 @@ export default function Navigation() {
     <header className="card border-0 rounded-none backdrop-blur-lg bg-black/20 border-b border-cyan-500/30 relative z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
-          {/* Futuristic Logo and brand */}
           <div className="flex items-center">
             <Link href="/dashboard" className="flex items-center group">
               <div className="relative">

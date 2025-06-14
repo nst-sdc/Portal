@@ -15,7 +15,6 @@ import {
   FiCheckCircle,
   FiAlertCircle,
   FiGitPullRequest,
-  FiBulb
 } from "react-icons/fi";
 import { BsLightbulb } from "react-icons/bs";
 
@@ -116,12 +115,13 @@ export default function StudentDetail() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* Back button */}
-      <Link href="/students" className="inline-flex items-center text-primary hover:underline mb-6">
+      <Link
+        href="/students"
+        className="inline-flex items-center text-primary hover:underline mb-6"
+      >
         <FiArrowLeft className="mr-2" /> Back to Students
       </Link>
 
-      {/* Student header */}
       <div className="card p-6 mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start">
           <img
@@ -131,16 +131,18 @@ export default function StudentDetail() {
           />
           <div className="text-center md:text-left flex-1">
             <h1 className="text-3xl font-bold mb-2">{student.name}</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Batch {student.batch}</p>
-            
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Batch {student.batch}
+            </p>
+
             <p className="text-gray-700 dark:text-gray-300 mb-4 max-w-2xl">
               {student.bio}
             </p>
-            
+
             <div className="flex flex-wrap gap-6 justify-center md:justify-start">
               <div className="flex items-center text-gray-600 dark:text-gray-400">
                 <FiGithub className="mr-2" />
-                <a 
+                <a
                   href={`https://github.com/${student.githubUsername}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -151,7 +153,7 @@ export default function StudentDetail() {
               </div>
               <div className="flex items-center text-gray-600 dark:text-gray-400">
                 <FiMail className="mr-2" />
-                <a 
+                <a
                   href={`mailto:${student.email}`}
                   className="hover:text-primary"
                 >
@@ -164,20 +166,23 @@ export default function StudentDetail() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-6 md:mt-0 flex flex-col items-center">
             <div className="bg-amber-100 dark:bg-amber-900/30 p-4 rounded-lg text-center">
               <div className="flex items-center justify-center text-amber-600 dark:text-amber-400">
                 <FiAward className="h-6 w-6 mr-2" />
-                <span className="text-3xl font-bold">{student.rewardPoints}</span>
+                <span className="text-3xl font-bold">
+                  {student.rewardPoints}
+                </span>
               </div>
-              <p className="text-amber-800 dark:text-amber-300 text-sm mt-1">Reward Points</p>
+              <p className="text-amber-800 dark:text-amber-300 text-sm mt-1">
+                Reward Points
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
         <nav className="flex space-x-8 overflow-x-auto">
           <button
@@ -223,14 +228,13 @@ export default function StudentDetail() {
         </nav>
       </div>
 
-      {/* Tab content */}
+
       <div className="card p-6">
         {activeTab === "overview" && (
           <div>
             <h2 className="text-xl font-semibold mb-6">Student Overview</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Stats */}
               <div>
                 <h3 className="text-lg font-medium mb-4">Activity Stats</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -264,16 +268,19 @@ export default function StudentDetail() {
                   </div>
                 </div>
               </div>
-              
-              {/* Top Languages */}
+
               <div>
                 <h3 className="text-lg font-medium mb-4">Top Languages</h3>
                 <div className="space-y-4">
                   {student.topLanguages.map((language) => (
                     <div key={language.name}>
                       <div className="flex justify-between mb-1">
-                        <span className="text-gray-700 dark:text-gray-300">{language.name}</span>
-                        <span className="text-gray-700 dark:text-gray-300">{language.percentage}%</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {language.name}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {language.percentage}%
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                         <div
@@ -286,8 +293,7 @@ export default function StudentDetail() {
                 </div>
               </div>
             </div>
-            
-            {/* Recent Projects */}
+
             <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">Recent Projects</h3>
@@ -303,7 +309,9 @@ export default function StudentDetail() {
                   <Link href={`/projects/${project.id}`} key={project.id}>
                     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
                       <h4 className="font-medium mb-2">{project.name}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{project.role}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        {project.role}
+                      </p>
                       <a
                         href={project.repoUrl}
                         target="_blank"
@@ -329,7 +337,9 @@ export default function StudentDetail() {
                 {student.projects.map((project) => (
                   <Link href={`/projects/${project.id}`} key={project.id}>
                     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:shadow-md transition-shadow h-full">
-                      <h3 className="font-semibold text-lg mb-2">{project.name}</h3>
+                      <h3 className="font-semibold text-lg mb-2">
+                        {project.name}
+                      </h3>
                       <div className="flex items-center mb-3">
                         <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded">
                           {project.role}
@@ -349,7 +359,9 @@ export default function StudentDetail() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600 dark:text-gray-400">No projects found for this student.</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                No projects found for this student.
+              </p>
             )}
           </div>
         )}
@@ -357,31 +369,40 @@ export default function StudentDetail() {
         {activeTab === "github" && (
           <div>
             <h2 className="text-xl font-semibold mb-6">GitHub Activity</h2>
-            
+
             <div className="mb-6">
               <h3 className="text-lg font-medium mb-4">Commit Activity</h3>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center space-x-2 overflow-x-auto pb-2">
                   {student.githubActivity.map((activity, index) => (
-                    <div key={index} className="flex flex-col items-center min-w-[50px]">
-                      <div 
+                    <div
+                      key={index}
+                      className="flex flex-col items-center min-w-[50px]"
+                    >
+                      <div
                         className="w-8 h-8 rounded-sm mb-1 flex items-center justify-center"
-                        style={{ 
-                          backgroundColor: `rgba(59, 130, 246, ${Math.min(1, activity.commits / 10)})`,
-                          color: activity.commits > 5 ? 'white' : 'black'
+                        style={{
+                          backgroundColor: `rgba(59, 130, 246, ${Math.min(
+                            1,
+                            activity.commits / 10
+                          )})`,
+                          color: activity.commits > 5 ? "white" : "black",
                         }}
                       >
                         {activity.commits}
                       </div>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(activity.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(activity.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-lg font-medium mb-4">Top Languages</h3>
@@ -390,8 +411,12 @@ export default function StudentDetail() {
                     {student.topLanguages.map((language) => (
                       <div key={language.name}>
                         <div className="flex justify-between mb-1">
-                          <span className="text-gray-700 dark:text-gray-300">{language.name}</span>
-                          <span className="text-gray-700 dark:text-gray-300">{language.percentage}%</span>
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {language.name}
+                          </span>
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {language.percentage}%
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                           <div
@@ -404,32 +429,48 @@ export default function StudentDetail() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-medium mb-4">Contribution Stats</h3>
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{student.issuesRaised}</div>
-                      <p className="text-gray-600 dark:text-gray-400">Issues Raised</p>
+                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                        {student.issuesRaised}
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Issues Raised
+                      </p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">{student.issuesSolved}</div>
-                      <p className="text-gray-600 dark:text-gray-400">Issues Solved</p>
+                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                        {student.issuesSolved}
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Issues Solved
+                      </p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{student.prsMerged}</div>
-                      <p className="text-gray-600 dark:text-gray-400">PRs Merged</p>
+                      <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                        {student.prsMerged}
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        PRs Merged
+                      </p>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{student.projectIdeas}</div>
-                      <p className="text-gray-600 dark:text-gray-400">Project Ideas</p>
+                      <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {student.projectIdeas}
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Project Ideas
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-6 text-center">
               <a
                 href={`https://github.com/${student.githubUsername}`}
@@ -445,8 +486,10 @@ export default function StudentDetail() {
 
         {activeTab === "rewards" && (
           <div>
-            <h2 className="text-xl font-semibold mb-6">Reward Points Breakdown</h2>
-            
+            <h2 className="text-xl font-semibold mb-6">
+              Reward Points Breakdown
+            </h2>
+
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium">Total Reward Points</h3>
@@ -458,25 +501,39 @@ export default function StudentDetail() {
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                 <div
                   className="bg-amber-500 h-4 rounded-full"
-                  style={{ width: `${Math.min(100, (student.rewardPoints / 500) * 100)}%` }}
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      (student.rewardPoints / 500) * 100
+                    )}%`,
+                  }}
                 ></div>
               </div>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 text-right">
                 {student.rewardPoints} / 500 points
               </p>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       Category
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       Points
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       Calculation
                     </th>
                   </tr>
@@ -486,15 +543,27 @@ export default function StudentDetail() {
                     <tr key={index}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {item.category === "Issues Raised" && <FiAlertCircle className="text-yellow-500 mr-2" />}
-                          {item.category === "Issues Solved" && <FiCheckCircle className="text-green-500 mr-2" />}
-                          {item.category === "PRs Merged" && <FiGitPullRequest className="text-purple-500 mr-2" />}
-                          {item.category === "Project Ideas" && <FiBulb className="text-blue-500 mr-2" />}
-                          <span className="font-medium text-gray-900 dark:text-gray-100">{item.category}</span>
+                          {item.category === "Issues Raised" && (
+                            <FiAlertCircle className="text-yellow-500 mr-2" />
+                          )}
+                          {item.category === "Issues Solved" && (
+                            <FiCheckCircle className="text-green-500 mr-2" />
+                          )}
+                          {item.category === "PRs Merged" && (
+                            <FiGitPullRequest className="text-purple-500 mr-2" />
+                          )}
+                          {item.category === "Project Ideas" && (
+                            <FiCheckCircle className="text-blue-500 mr-2" />
+                          )}
+                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                            {item.category}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-gray-900 dark:text-gray-100 font-medium">{item.points}</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-medium">
+                          {item.points}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {item.formula}
@@ -504,7 +573,9 @@ export default function StudentDetail() {
                 </tbody>
                 <tfoot className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium">Total</td>
+                    <td className="px-6 py-4 whitespace-nowrap font-medium">
+                      Total
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap font-bold text-amber-600 dark:text-amber-400">
                       {student.rewardPoints}
                     </td>
@@ -513,26 +584,34 @@ export default function StudentDetail() {
                 </tfoot>
               </table>
             </div>
-            
+
             <div className="mt-8">
               <h3 className="text-lg font-medium mb-4">Reward System Rules</h3>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                 <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                   <li className="flex items-start">
                     <FiAlertCircle className="text-yellow-500 mt-1 mr-2 flex-shrink-0" />
-                    <span><strong>Issues Raised:</strong> 5 points per issue</span>
+                    <span>
+                      <strong>Issues Raised:</strong> 5 points per issue
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <FiCheckCircle className="text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span><strong>Issues Solved:</strong> 10 points per issue</span>
+                    <span>
+                      <strong>Issues Solved:</strong> 10 points per issue
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <FiGitPullRequest className="text-purple-500 mt-1 mr-2 flex-shrink-0" />
-                    <span><strong>PRs Merged:</strong> 10 points per PR</span>
+                    <span>
+                      <strong>PRs Merged:</strong> 10 points per PR
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <BsLightbulb className="text-blue-500 mt-1 mr-2 flex-shrink-0" />
-                    <span><strong>Project Ideas:</strong> 10 points per idea</span>
+                    <span>
+                      <strong>Project Ideas:</strong> 10 points per idea
+                    </span>
                   </li>
                 </ul>
               </div>

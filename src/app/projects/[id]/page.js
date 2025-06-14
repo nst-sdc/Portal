@@ -214,12 +214,10 @@ export default function ProjectDetail() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* Back button */}
       <Link href="/projects" className="inline-flex items-center text-primary hover:underline mb-6">
         <FiArrowLeft className="mr-2" /> Back to Projects
       </Link>
 
-      {/* Project header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">{project.name}</h1>
@@ -247,7 +245,6 @@ export default function ProjectDetail() {
         )}
       </div>
 
-      {/* Project stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="card p-4 flex flex-col items-center">
           <FiStar className="text-yellow-500 mb-2 h-6 w-6" />
@@ -271,7 +268,6 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {/* Project tabs */}
       <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
         <nav className="flex space-x-8">
           <button
@@ -307,7 +303,6 @@ export default function ProjectDetail() {
         </nav>
       </div>
 
-      {/* Tab content */}
       <div className="card p-6">
         {activeTab === "overview" && (
           <div>
@@ -316,7 +311,6 @@ export default function ProjectDetail() {
               {project.longDescription || project.description}
             </p>
 
-            {/* Project Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <h3 className="text-lg font-medium mb-3">Project Information</h3>
@@ -377,7 +371,6 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Timeline */}
             <div>
               <h3 className="text-lg font-medium mb-3">Timeline</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -472,7 +465,6 @@ export default function ProjectDetail() {
         )}
       </div>
 
-      {/* Student Assignment Modal */}
       {showAssignModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">

@@ -42,7 +42,6 @@ export default function SupabaseDebug() {
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-8">Supabase Connection Debug</h1>
         
-        {/* Environment Info */}
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Environment Information</h2>
           {envInfo && (
@@ -55,7 +54,6 @@ export default function SupabaseDebug() {
           )}
         </div>
 
-        {/* Connection Test */}
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Connection Test</h2>
           <button 
@@ -83,7 +81,6 @@ export default function SupabaseDebug() {
           )}
         </div>
 
-        {/* Table Access Test */}
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Table Access Test</h2>
           <button 
@@ -114,7 +111,6 @@ export default function SupabaseDebug() {
           )}
         </div>
 
-        {/* Instructions */}
         <div className="card p-6">
           <h2 className="text-xl font-bold mb-4">Troubleshooting Steps</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">
